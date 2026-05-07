@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './BookingConfirmed.css';
 
-function BookingConfirmed({ booking, onGoToDashboard }) {
+function BookingConfirmed({ booking }) {
+    const navigate = useNavigate();
     const handleAddToCalendar = () => {
         const title = `Appointment with ${booking?.doctor?.name || 'Doctor'}`;
         const details = `${booking?.doctor?.specialty || ''} appointment - ${booking?.reason || 'General consultation'}`;
@@ -67,7 +69,7 @@ function BookingConfirmed({ booking, onGoToDashboard }) {
                         <button className="btn-calendar" onClick={handleAddToCalendar}>
                             <span className="material-symbols-outlined">event</span> Add to Calendar
                         </button>
-                        <button className="btn-dashboard" onClick={onGoToDashboard}>
+                        <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
                             <span className="material-symbols-outlined">dashboard</span> Go to Dashboard
                         </button>
                     </div>

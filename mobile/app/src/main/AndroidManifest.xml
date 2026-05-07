@@ -13,30 +13,51 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppointMedMobile">
 
+        <!-- Auth -->
         <activity
-            android:name="com.appointmed.mobile.ui.ChangePasswordActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.appointmed.mobile.ui.UpdateProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.appointmed.mobile.ui.ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.appointmed.mobile.ui.DashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.appointmed.mobile.ui.RegisterActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.appointmed.mobile.ui.LoginActivity"
+            android:name=".auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="false" />
+
+        <!-- Dashboard -->
+        <activity
+            android:name=".dashboard.DashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminDashboardActivity"
+            android:exported="false" />
+
+        <!-- Profile -->
+        <activity
+            android:name=".profile.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".profile.UpdateProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".profile.ChangePasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".appointments.AppointmentsActivity"
+            android:exported="false" />
+
+        <!-- Booking & Specialists -->
+        <activity
+            android:name=".specialist.SelectSpecialistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".booking.BookAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".booking.BookingConfirmedActivity"
+            android:exported="false" />
 
     </application>
 

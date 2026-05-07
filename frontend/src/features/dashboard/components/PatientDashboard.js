@@ -1,15 +1,48 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth, useToast } from "../../../App";
+import { appointmentAPI, doctorAPI, notificationAPI } from "../../../shared/services/api";
 import "./PatientDashboard.css";
 
-function PatientDashboard({ onLogout, onNavigateProfile, onNavigate }) {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    const patientName = savedUser?.name || "Juan Dela Cruz";
+function PatientDashboard() {
+    const navigate = useNavigate();
+    const { user, handleLogout } = useAuth();
+    const showToast = useToast();
+    const patientName = user?.name || "Patient";
+
+    const [upcomingAppt, setUpcomingAppt] = useState(null);
+    const [doctors, setDoctors] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!savedUser) window.location.href = "/";
-    }, [savedUser]);
+        if (!user) return;
+        const fetchData = async () => {
+            try {
+                // Fetch all appointments and find the most recent upcoming one
+                const apptRes = await appointmentAPI.getByPatient(user.id);
+                const allAppts = apptRes.data || [];
+                const upcoming = allAppts
+                    .filter(a => a.status !== 'CANCELLED' && a.status !== 'COMPLETED')
+                    .sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+                if (upcoming.length > 0) setUpcomingAppt(upcoming[0]);
 
-    const nav = (view) => { if (onNavigate) onNavigate(view); };
+                // Fetch doctors for specialist cards
+                const docRes = await doctorAPI.getAll();
+                setDoctors(docRes.data.slice(0, 4));
+
+                // Fetch notification count
+                const notifRes = await notificationAPI.getUnread(user.id);
+                setUnreadCount(notifRes.data.count || 0);
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, [user]);
+
+    const nav = (view) => navigate(`/${view.toLowerCase()}`);
 
     return (
         <div className="patient-dashboard">
@@ -19,14 +52,14 @@ function PatientDashboard({ onLogout, onNavigateProfile, onNavigate }) {
                     <span className="logo-text-blue">Med</span>
                 </div>
                 <div className="header-actions">
-                    <button className="icon-button notification-btn">
+                    <button className="icon-button notification-btn" onClick={() => showToast('Notifications coming soon', 'info')}>
                         <span className="material-symbols-outlined">notifications</span>
-                        <span className="notification-dot"></span>
+                        {unreadCount > 0 && <span className="notification-dot"></span>}
                     </button>
-                    <div className="user-profile-header" onClick={onNavigateProfile} style={{ cursor: 'pointer' }}>
+                    <div className="user-profile-header" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
                         <div>
                             <p className="profile-name">{patientName}</p>
-                            <p className="profile-role">{savedUser?.role || ""}</p>
+                            <p className="profile-role">{user?.role || ""}</p>
                         </div>
                         <div className="profile-avatar">
                             <span className="material-symbols-outlined">account_circle</span>
@@ -37,34 +70,29 @@ function PatientDashboard({ onLogout, onNavigateProfile, onNavigate }) {
 
             <aside className="patient-sidebar">
                 <nav className="patient-nav">
-                    <button className="patient-nav-button active" onClick={() => nav('DASHBOARD')}>
+                    <button className="patient-nav-button active" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span>
                         <span>Dashboard</span>
                     </button>
-                    <button className="patient-nav-button" onClick={() => nav('SPECIALISTS')}>
+                    <button className="patient-nav-button" onClick={() => navigate('/appointments')}>
                         <span className="material-symbols-outlined">calendar_today</span>
                         <span>Appointments</span>
                     </button>
-                    <button className="patient-nav-button" onClick={() => nav('SPECIALISTS')}>
+                    <button className="patient-nav-button" onClick={() => navigate('/specialists')}>
                         <span className="material-symbols-outlined">medical_services</span>
                         <span>Doctors</span>
                     </button>
-                    <button className="patient-nav-button">
-                        <span className="material-symbols-outlined">chat_bubble</span>
-                        <span>Messages</span>
+                    <button className="patient-nav-button" onClick={() => navigate('/notifications')}>
+                        <span className="material-symbols-outlined">notifications</span>
+                        <span>Notifications</span>
                     </button>
-                    <button className="patient-nav-button">
-                        <span className="material-symbols-outlined">payments</span>
-                        <span>Billing</span>
-                    </button>
-                    <button className="patient-nav-button" onClick={() => nav('PROFILE')}>
+                    <button className="patient-nav-button" onClick={() => navigate('/profile')}>
                         <span className="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </button>
                 </nav>
-
                 <div className="sidebar-footer">
-                    <button className="logout-btn" onClick={() => { localStorage.clear(); if(onLogout) onLogout(); }}>
+                    <button className="logout-btn" onClick={handleLogout}>
                         <span className="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </button>
@@ -77,43 +105,55 @@ function PatientDashboard({ onLogout, onNavigateProfile, onNavigate }) {
                         <h1>Welcome back to your health summary.</h1>
                     </div>
                     <div className="header-actions">
-                        <button className="btn-primary" onClick={() => nav('SPECIALISTS')}>
+                        <button className="btn-primary" onClick={() => navigate('/specialists')}>
                             <span className="material-symbols-outlined">add_circle</span>
                             Quick Book
                         </button>
                     </div>
                 </div>
 
+                {/* Upcoming Appointment */}
                 <section className="upcoming-card">
-                    <div className="upcoming-date-section">
-                        <p className="label-tiny">Upcoming</p>
-                        <div className="date-display">
-                            <span className="material-symbols-outlined">calendar_month</span>
-                            <div>
-                                <p className="date-main">Oct 24</p>
-                                <p className="date-sub">Thursday, 10:00 AM</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="upcoming-info-section">
-                        <div className="doctor-meta">
-                            <div className="avatar-large"></div>
-                            <div className="meta-text">
-                                <h3>Dr. Maria Santos</h3>
-                                <p>Senior Cardiologist • Makati Medical Center</p>
-                                <div className="tags">
-                                    <span className="tag-blue">Consultation</span>
-                                    <span className="tag-price">₱2,500.00 Fee Paid</span>
+                    {upcomingAppt ? (
+                        <>
+                            <div className="upcoming-date-section">
+                                <p className="label-tiny">Upcoming</p>
+                                <div className="date-display">
+                                    <span className="material-symbols-outlined">calendar_month</span>
+                                    <div>
+                                        <p className="date-main">{upcomingAppt.appointmentDate}</p>
+                                        <p className="date-sub">{upcomingAppt.appointmentTime}</p>
+                                    </div>
                                 </div>
                             </div>
+                            <div className="upcoming-info-section">
+                                <div className="doctor-meta">
+                                    <div className="avatar-large"></div>
+                                    <div className="meta-text">
+                                        <h3>{upcomingAppt.doctor?.user?.name || 'Doctor'}</h3>
+                                        <p>{upcomingAppt.doctor?.specialization || 'Specialist'} • {upcomingAppt.doctor?.clinicAddress || ''}</p>
+                                        <div className="tags">
+                                            <span className="tag-blue">{upcomingAppt.reason || 'Consultation'}</span>
+                                            <span className="tag-price">₱{upcomingAppt.fee || '0.00'} {upcomingAppt.paymentStatus}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="card-actions">
+                                    <button className="btn-outline" onClick={() => navigate('/specialists')}>Reschedule</button>
+                                    <button className="btn-dark">View Details</button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 40 }}>event_available</span>
+                            <p style={{ margin: '8px 0 0' }}>No upcoming appointments</p>
+                            <button className="btn-primary" style={{ marginTop: 12 }} onClick={() => navigate('/specialists')}>Book Now</button>
                         </div>
-                        <div className="card-actions">
-                            <button className="btn-outline" onClick={() => nav('SPECIALISTS')}>Reschedule</button>
-                            <button className="btn-dark">View Details</button>
-                        </div>
-                    </div>
+                    )}
                 </section>
 
+                {/* Specialist Grid */}
                 <div className="section-title-row">
                     <h2>Find a Specialist</h2>
                     <div className="search-bar">
@@ -123,34 +163,25 @@ function PatientDashboard({ onLogout, onNavigateProfile, onNavigate }) {
                 </div>
 
                 <div className="specialist-grid">
-                    <div className="doctor-card">
-                        <div className="card-top">
-                            <div className="avatar-placeholder"><span className="material-symbols-outlined">person</span></div>
-                            <span className="badge-available">Available</span>
+                    {doctors.length > 0 ? doctors.map(doc => (
+                        <div className="doctor-card" key={doc.id}>
+                            <div className="card-top">
+                                <div className="avatar-placeholder"><span className="material-symbols-outlined">person</span></div>
+                                <span className="badge-available">{doc.available ? 'Available' : 'Busy'}</span>
+                            </div>
+                            <h4>{doc.name}</h4>
+                            <p className="specialty-text">{doc.specialization}</p>
+                            <div className="card-details">
+                                <p><span className="material-symbols-outlined">location_on</span>{doc.clinicAddress || 'Clinic'}</p>
+                                <p><span className="material-symbols-outlined">payments</span> ₱1,500.00 / session</p>
+                            </div>
+                            <button className="btn-ghost" onClick={() => navigate('/specialists')}>Book Now</button>
                         </div>
-                        <h4>Dr. Elena Reyes</h4>
-                        <p className="specialty-text">Pediatrics</p>
-                        <div className="card-details">
-                            <p><span className="material-symbols-outlined">location_on</span>St. Luke's Medical Center</p>
-                            <p><span className="material-symbols-outlined">payments</span> ₱1,800.00 / session</p>
+                    )) : (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 32, color: '#94a3b8' }}>
+                            {loading ? 'Loading doctors...' : 'No doctors available yet. Check back soon!'}
                         </div>
-                        <button className="btn-ghost" onClick={() => nav('SPECIALISTS')}>Book Now</button>
-                    </div>
-                </div>
-
-                <div className="stats-row">
-                    <div className="stat-card">
-                        <div className="stat-icon blue"><span className="material-symbols-outlined">description</span></div>
-                        <div><p className="stat-label">UNPAID INVOICES</p><p className="stat-value">₱0.00</p></div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon green"><span className="material-symbols-outlined">folder_open</span></div>
-                        <div><p className="stat-label">MEDICAL RECORDS</p><p className="stat-value">12 Files</p></div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon orange"><span className="material-symbols-outlined">pill</span></div>
-                        <div><p className="stat-label">ACTIVE PRESCRIPTIONS</p><p className="stat-value">3 Active</p></div>
-                    </div>
+                    )}
                 </div>
             </main>
         </div>

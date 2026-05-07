@@ -7,5 +7,6 @@ data class User(
     val password: String = "",
     val role: String = "",
     val avatarUrl: String? = null,
-    val avatarData: String? = null
+    val avatarData: String? = null,
+    val consultationFee: Double = 0.0
 )

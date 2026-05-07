@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { userAPI } from "../../../shared/services/api";
+import { useNavigate } from "react-router-dom";
+import { useAuth, useToast } from "../../../App";
+import { authAPI } from "../../../shared/services/api";
 import "./RegisterPage.css";
 
-function RegisterPage({ onSwitch }) {
+function RegisterPage() {
+    const navigate = useNavigate();
+    const { handleLogin } = useAuth();
+    const showToast = useToast();
     const [role, setRole] = useState("PATIENT");
     const [formData, setFormData] = useState({
         fullName: "",
@@ -52,11 +57,12 @@ function RegisterPage({ onSwitch }) {
 
         setLoading(true);
         try {
-            const response = await userAPI.register({ ...formData, role });
-            setMessage(`Registration successful! Welcome ${response.data.name}`);
-            if (onSwitch) setTimeout(() => onSwitch(), 2000);
+            const response = await authAPI.register({ ...formData, role });
+            handleLogin(response.data);
+            showToast('Account created successfully!', 'success');
+            navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data || "Unable to connect to the server.");
+            setError(err.response?.data?.message || "Unable to connect to the server.");
         } finally {
             setLoading(false);
         }
@@ -144,7 +150,38 @@ function RegisterPage({ onSwitch }) {
                             <>
                                 <div className="input-field">
                                     <label>Specialization</label>
-                                    <input className="input-control" name="specialization" placeholder="Cardiology" type="text" value={formData.specialization} onChange={handleChange} />
+                                    <select className="input-control" name="specialization" value={formData.specialization} onChange={handleChange} required>
+                                        <option value="">Select Specialization</option>
+                                        <option value="Allergology">Allergology</option>
+                                        <option value="Anesthesiology">Anesthesiology</option>
+                                        <option value="Cardiology">Cardiology</option>
+                                        <option value="Dermatology">Dermatology</option>
+                                        <option value="Emergency Medicine">Emergency Medicine</option>
+                                        <option value="Endocrinology">Endocrinology</option>
+                                        <option value="Family Medicine">Family Medicine</option>
+                                        <option value="Gastroenterology">Gastroenterology</option>
+                                        <option value="General Surgery">General Surgery</option>
+                                        <option value="Geriatrics">Geriatrics</option>
+                                        <option value="Hematology">Hematology</option>
+                                        <option value="Infectious Disease">Infectious Disease</option>
+                                        <option value="Internal Medicine">Internal Medicine</option>
+                                        <option value="Nephrology">Nephrology</option>
+                                        <option value="Neurology">Neurology</option>
+                                        <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                                        <option value="Oncology">Oncology</option>
+                                        <option value="Ophthalmology">Ophthalmology</option>
+                                        <option value="Orthopedics">Orthopedics</option>
+                                        <option value="Otolaryngology (ENT)">Otolaryngology (ENT)</option>
+                                        <option value="Pathology">Pathology</option>
+                                        <option value="Pediatrics">Pediatrics</option>
+                                        <option value="Physical Medicine & Rehabilitation">Physical Medicine & Rehabilitation</option>
+                                        <option value="Psychiatry">Psychiatry</option>
+                                        <option value="Pulmonology">Pulmonology</option>
+                                        <option value="Radiology">Radiology</option>
+                                        <option value="Rheumatology">Rheumatology</option>
+                                        <option value="Sports Medicine">Sports Medicine</option>
+                                        <option value="Urology">Urology</option>
+                                    </select>
                                 </div>
                                 <div className="input-grid">
                                     <div className="input-field">
@@ -185,7 +222,7 @@ function RegisterPage({ onSwitch }) {
 
                     <div className="register-card-footer">
                         Already have an account?
-                        <button onClick={onSwitch} className="login-link">Sign in</button>
+                        <button onClick={() => navigate('/login')} className="login-link">Sign in</button>
                     </div>
                 </div>
             </main>

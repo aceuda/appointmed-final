@@ -13,38 +13,53 @@
         android:paddingTop="16dp"
         android:paddingBottom="32dp">
 
-        <!-- Top bar with AppointMed -->
-        <LinearLayout
+        <!-- Top bar: Back + Title -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
-            <View
-                android:layout_width="24dp"
-                android:layout_height="24dp" />
-        </LinearLayout>
+            android:layout_marginBottom="32dp">
 
-        <!-- Brand Title -->
+            <ImageView
+                android:id="@+id/buttonBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@android:drawable/ic_menu_revert"
+                android:tint="@color/textSecondary"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="AppointMed"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary" />
+        </RelativeLayout>
+
+        <!-- Brand Title (Large) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Appoint"
-                android:textSize="28sp"
+                android:textSize="32sp"
                 android:textStyle="bold"
-                android:textColor="@color/textPrimary" />
+                android:textColor="#475569" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Med"
-                android:textSize="28sp"
+                android:textSize="32sp"
                 android:textStyle="bold"
                 android:textColor="#38BDF8" />
         </LinearLayout>
@@ -55,25 +70,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Welcome Back"
-            android:textSize="24sp"
-            android:textColor="@color/textPrimary"
+            android:textSize="26sp"
+            android:textColor="#0F172A"
             android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginTop="8dp" />
+            android:gravity="center" />
 
         <!-- Subtitle -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Please enter your credentials to access your\nclinical dashboard."
-            android:textColor="@color/textSecondary"
-            android:textSize="13sp"
+            android:textColor="#64748B"
+            android:textSize="14sp"
             android:gravity="center"
-            android:lineSpacingExtra="3dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="24dp" />
+            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp" />
 
-        <!-- Role Tab Selector: Patient | Doctor | Admin -->
+        <!-- Role Tab Selector: Patient | Doctor (Excluded Admin) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,19 +95,19 @@
             android:orientation="horizontal"
             android:padding="4dp"
             android:gravity="center"
-            android:layout_marginBottom="28dp">
+            android:layout_marginBottom="32dp">
 
             <Button
                 android:id="@+id/buttonPatient"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="42dp"
+                android:layout_height="44dp"
                 android:background="@drawable/bg_tab_active"
                 android:text="Patient"
                 android:textAllCaps="false"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/textPrimary"
+                android:textColor="#1E293B"
                 android:stateListAnimator="@null"
                 android:elevation="1dp" />
 
@@ -101,26 +115,21 @@
                 android:id="@+id/buttonDoctor"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="42dp"
+                android:layout_height="44dp"
                 android:background="@drawable/bg_tab_inactive"
                 android:text="Doctor"
                 android:textAllCaps="false"
-                android:textSize="13sp"
-                android:textColor="@color/textSecondary"
+                android:textSize="14sp"
+                android:textColor="#64748B"
                 android:stateListAnimator="@null" />
 
+            <!-- Hidden Admin Button -->
             <Button
                 android:id="@+id/buttonAdmin"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="42dp"
-                android:background="@drawable/bg_tab_inactive"
-                android:text="Admin"
-                android:textAllCaps="false"
-                android:textSize="13sp"
-                android:textColor="@color/textSecondary"
-                android:stateListAnimator="@null"
-                android:visibility="visible" />
+                android:layout_weight="0"
+                android:layout_height="0dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Error Message -->
@@ -150,17 +159,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Email Address"
-            android:textColor="@color/textPrimary"
-            android:textSize="13sp"
+            android:textColor="#1E293B"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="10dp" />
 
         <!-- Email Input -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:background="@drawable/bg_input_auth"
             android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -177,12 +187,11 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:hint="name@clinic.com"
-                android:textColorHint="#CBD5E1"
+                android:textColorHint="#94A3B8"
                 android:inputType="textEmailAddress"
                 android:background="@android:color/transparent"
-                android:textSize="14sp"
-                android:textColor="@color/textPrimary"
-                android:minHeight="24dp" />
+                android:textSize="15sp"
+                android:textColor="#1E293B" />
         </LinearLayout>
 
         <!-- Password Label + Forgot -->
@@ -190,32 +199,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="8dp">
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Password"
-                android:textColor="@color/textPrimary"
-                android:textSize="13sp"
+                android:textColor="#1E293B"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/buttonForgot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forgot?"
-                android:textColor="#3B82F6"
-                android:textSize="13sp" />
+                android:textColor="#475569"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
         <!-- Password Input -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:background="@drawable/bg_input_auth"
             android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -232,32 +246,34 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:hint="••••••••"
-                android:textColorHint="#CBD5E1"
+                android:textColorHint="#94A3B8"
                 android:inputType="textPassword"
                 android:background="@android:color/transparent"
-                android:textSize="14sp"
-                android:textColor="@color/textPrimary"
-                android:minHeight="24dp" />
+                android:textSize="15sp"
+                android:textColor="#1E293B" />
 
             <ImageView
+                android:id="@+id/buttonTogglePassword"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_view"
                 android:tint="#94A3B8"
-                android:contentDescription="Toggle password visibility" />
+                android:contentDescription="Toggle password"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
         <!-- Sign In Button -->
         <Button
             android:id="@+id/buttonLogin"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="28dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="32dp"
             android:background="@drawable/bg_button_dark"
-            android:text="Sign In →"
+            android:text="Sign In ➔"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:stateListAnimator="@null" />
 
@@ -267,7 +283,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:visibility="gone" />
 
         <!-- Register Link -->
@@ -276,29 +292,25 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="32dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New to AppointMed?  "
-                android:textColor="@color/textSecondary"
-                android:textSize="13sp" />
+                android:text="New to AppointMed? "
+                android:textColor="#64748B"
+                android:textSize="14sp" />
 
-            <Button
+            <TextView
                 android:id="@+id/buttonGoRegister"
-                style="?attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create an account"
-                android:textAllCaps="false"
-                android:textColor="@color/textPrimary"
-                android:textSize="13sp"
+                android:text="Register now"
+                android:textColor="#1E293B"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="0dp"
-                android:paddingVertical="0dp" />
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

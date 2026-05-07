@@ -1,36 +1,33 @@
 import React, { useState } from "react";
-import { userAPI } from "../../../shared/services/api";
+import { useNavigate } from "react-router-dom";
+import { useAuth, useToast } from "../../../App";
+import { authAPI } from "../../../shared/services/api";
 import "./LoginPage.css";
 
-function LoginPage({ onLogin, onSwitch }) {
-    // Restricted roles to exclude Admin
-    const roles = ["Patient", "Doctor"];
+function LoginPage() {
+    const navigate = useNavigate();
+    const { handleLogin } = useAuth();
+    const showToast = useToast();
 
+    const roles = ["Patient", "Doctor"];
     const [role, setRole] = useState("Patient");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage("");
-        setError("");
         setLoading(true);
-
         try {
-            const response = await userAPI.login({
+            const response = await authAPI.login({
                 email,
                 password,
                 role: role.toUpperCase(),
             });
-
-            setMessage(`Login successful! Welcome ${response.data.name}`);
-            if (onLogin) onLogin(response.data);
-
+            handleLogin(response.data);
+            navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data || "Unable to connect to the server.");
+            showToast(err.response?.data?.message || "Invalid email or password.", "error");
         } finally {
             setLoading(false);
         }
@@ -52,7 +49,6 @@ function LoginPage({ onLogin, onSwitch }) {
                         <p>Secure portal for patients and providers</p>
                     </div>
 
-                    {/* Role Switcher - Now dynamic for 2 roles */}
                     <div className="role-toggle-container">
                         {roles.map((r) => (
                             <button
@@ -65,9 +61,6 @@ function LoginPage({ onLogin, onSwitch }) {
                             </button>
                         ))}
                     </div>
-
-                    {error && <div className="login-alert error">{error}</div>}
-                    {message && <div className="login-alert success">{message}</div>}
 
                     <form onSubmit={handleSubmit} className="login-form-body">
                         <div className="input-field">
@@ -109,7 +102,7 @@ function LoginPage({ onLogin, onSwitch }) {
 
                     <div className="login-card-footer">
                         Don't have an account?
-                        <button onClick={onSwitch} className="register-link">Register now</button>
+                        <button onClick={() => navigate('/register')} className="register-link">Register now</button>
                     </div>
                 </div>
             </main>

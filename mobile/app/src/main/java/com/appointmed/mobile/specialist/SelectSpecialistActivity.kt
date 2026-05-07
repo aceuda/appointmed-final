@@ -22,15 +22,20 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: DoctorAdapter
     private lateinit var resultCount: TextView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var chipsContainer: LinearLayout
+    private var activeSpecialty = "All"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_specialist)
 
-        presenter = SelectSpecialistPresenter(this)
+        presenter = SelectSpecialistPresenter(this, this)
 
         recyclerView = findViewById(R.id.recyclerDoctors)
         resultCount = findViewById(R.id.textResultCount)
+        progressBar = findViewById(R.id.progressBar)
+        chipsContainer = findViewById(R.id.filterChipsContainer)
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = DoctorAdapter(emptyList()) { doctor -> presenter.onBookClicked(doctor) }
         recyclerView.adapter = adapter
@@ -45,43 +50,62 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        // Filter chips
-        findViewById<Button>(R.id.chipAll).setOnClickListener {
-            setActiveChip(it as Button)
-            presenter.filterBySpecialty("All")
-        }
-        findViewById<Button>(R.id.chipCardio).setOnClickListener {
-            setActiveChip(it as Button)
-            presenter.filterBySpecialty("Cardiologist")
-        }
-        findViewById<Button>(R.id.chipDerma).setOnClickListener {
-            setActiveChip(it as Button)
-            presenter.filterBySpecialty("Dermatologist")
-        }
-
         // Bottom nav
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener { presenter.onHomeClicked() }
         findViewById<LinearLayout>(R.id.navProfile).setOnClickListener { presenter.onProfileClicked() }
+        findViewById<LinearLayout>(R.id.navSchedule).setOnClickListener { presenter.onScheduleClicked() }
 
         presenter.loadDoctors()
+        presenter.loadSpecializations()
     }
 
-    private fun setActiveChip(active: Button) {
-        val chips = listOf(
-            findViewById<Button>(R.id.chipAll),
-            findViewById<Button>(R.id.chipCardio),
-            findViewById<Button>(R.id.chipDerma)
-        )
-        chips.forEach { chip ->
-            if (chip == active) {
-                chip.setBackgroundResource(R.drawable.bg_chip_active)
-                chip.setTextColor(resources.getColor(android.R.color.white, null))
-            } else {
-                chip.setBackgroundResource(R.drawable.bg_chip_inactive)
-                chip.setTextColor(resources.getColor(R.color.textSecondary, null))
+    override fun showSpecializations(specs: List<String>) {
+        chipsContainer.removeAllViews()
+        val allSpecs = mutableListOf("All")
+        allSpecs.addAll(specs)
+
+        allSpecs.forEach { spec ->
+            val button = Button(this).apply {
+                text = spec
+                textSize = 12f
+                isAllCaps = false
+                val params = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    36.dpToPx()
+                )
+                params.marginEnd = 8.dpToPx()
+                layoutParams = params
+                setPadding(16.dpToPx(), 0, 16.dpToPx(), 0)
+                minWidth = 0
+                minHeight = 0
+                
+                updateChipStyle(this, spec == activeSpecialty)
+                
+                setOnClickListener {
+                    activeSpecialty = spec
+                    presenter.filterBySpecialty(spec)
+                    // Refresh all chips style
+                    for (i in 0 until chipsContainer.childCount) {
+                        val child = chipsContainer.getChildAt(i) as? Button ?: continue
+                        updateChipStyle(child, child.text == activeSpecialty)
+                    }
+                }
             }
+            chipsContainer.addView(button)
         }
     }
+
+    private fun updateChipStyle(button: Button, isActive: Boolean) {
+        if (isActive) {
+            button.setBackgroundResource(R.drawable.bg_chip_active)
+            button.setTextColor(resources.getColor(android.R.color.white, null))
+        } else {
+            button.setBackgroundResource(R.drawable.bg_chip_inactive)
+            button.setTextColor(resources.getColor(R.color.textSecondary, null))
+        }
+    }
+
+    private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     override fun showDoctors(doctors: List<DoctorItem>) {
         adapter.updateData(doctors)
@@ -92,8 +116,19 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
         resultCount.text = "$count RESULTS"
     }
 
+    override fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+    }
+
+    override fun hideLoading() {
+        progressBar.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
+    }
+
     override fun navigateToBooking(doctor: DoctorItem) {
         val intent = Intent(this, BookAppointmentActivity::class.java)
+        intent.putExtra("doctor_id", doctor.id)
         intent.putExtra("doctor_name", doctor.name)
         intent.putExtra("doctor_specialty", doctor.specialty)
         intent.putExtra("doctor_fee", doctor.fee)
@@ -108,6 +143,10 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
 
     override fun navigateToProfile() {
         startActivity(Intent(this, ProfileActivity::class.java))
+    }
+
+    override fun navigateToAppointments() {
+        startActivity(Intent(this, com.appointmed.mobile.appointments.AppointmentsActivity::class.java))
     }
 
     override fun showError(message: String) {
@@ -149,7 +188,14 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
             holder.name.text = doc.name
             holder.specialty.text = doc.specialty
             holder.clinic.text = doc.clinic
-            holder.fee.text = "₱${String.format("%,d", doc.fee)}"
+            
+            // Format fee with Peso sign
+            holder.fee.text = if (doc.fee > 0) {
+                "₱${String.format("%,.0f", doc.fee)}"
+            } else {
+                "₱0"
+            }
+
             holder.rating.text = "★ ${doc.rating}"
 
             if (doc.available) {
@@ -158,10 +204,10 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
                 holder.btnBook.setTextColor(holder.itemView.resources.getColor(android.R.color.white, null))
                 holder.btnBook.isEnabled = true
             } else {
-                holder.btnBook.text = "Waitlist"
+                holder.btnBook.text = "Unavailable"
                 holder.btnBook.setBackgroundResource(R.drawable.bg_chip_inactive)
                 holder.btnBook.setTextColor(holder.itemView.resources.getColor(R.color.textSecondary, null))
-                holder.btnBook.isEnabled = true
+                holder.btnBook.isEnabled = false
             }
             holder.btnBook.setOnClickListener { onBookClick(doc) }
         }

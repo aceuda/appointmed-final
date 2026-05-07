@@ -1,43 +1,51 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../App';
+import { doctorAPI } from '../../../shared/services/api';
 import './SelectSpecialist.css';
 
-const DOCTORS = [
-    { id: 1, name: 'Dr. Sarah Jenkins', specialty: 'Cardiology', rating: 4.9, reviews: 124, available: true },
-    { id: 2, name: 'Dr. Michael Chen', specialty: 'Pediatrics', rating: 4.8, reviews: 89, available: true },
-    { id: 3, name: 'Dr. Elena Rodriguez', specialty: 'Dermatology', rating: 5.0, reviews: 210, available: true },
-    { id: 4, name: 'Dr. James Wilson', specialty: 'General Medicine', rating: 4.7, reviews: 156, available: true },
-    { id: 5, name: 'Dr. Aisha Khan', specialty: 'Neurology', rating: 4.9, reviews: 42, available: true },
-    { id: 6, name: 'Dr. Thomas Berg', specialty: 'Oncology', rating: 4.6, reviews: 73, available: true },
-    { id: 7, name: 'Dr. Maria Garcia', specialty: 'Psychiatry', rating: 4.8, reviews: 192, available: true },
-    { id: 8, name: 'Dr. Robert Taylor', specialty: 'Orthopedics', rating: 4.7, reviews: 55, available: true },
-    { id: 9, name: 'Dr. Lisa Park', specialty: 'Cardiology', rating: 4.6, reviews: 67, available: false },
-    { id: 10, name: 'Dr. Ahmed Hassan', specialty: 'Pediatrics', rating: 4.5, reviews: 34, available: true },
-    { id: 11, name: 'Dr. Clara Reyes', specialty: 'Dermatology', rating: 4.9, reviews: 101, available: true },
-    { id: 12, name: 'Dr. Kevin Nguyen', specialty: 'General Medicine', rating: 4.4, reviews: 88, available: true },
-];
-
-const SPECIALTIES = ['All Specialists', 'Cardiology', 'Pediatrics', 'General Medicine', 'Dermatology', 'Neurology', 'Oncology', 'Psychiatry', 'Orthopedics'];
-
-function SelectSpecialist({ onNavigate, onSelectDoctor }) {
-    const savedUser = JSON.parse(localStorage.getItem('user'));
+function SelectSpecialist({ onSelectDoctor }) {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [doctors, setDoctors] = useState([]);
+    const [specializations, setSpecializations] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Specialists');
     const [visibleCount, setVisibleCount] = useState(8);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [docRes, specRes] = await Promise.all([
+                    doctorAPI.getAll(),
+                    doctorAPI.getSpecializations()
+                ]);
+                setDoctors(docRes.data);
+                setSpecializations(['All Specialists', ...specRes.data]);
+            } catch (err) {
+                console.error('Failed to load doctors:', err);
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
 
     const filteredDoctors = useMemo(() => {
-        return DOCTORS.filter(doc => {
-            const matchSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                doc.specialty.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchFilter = activeFilter === 'All Specialists' || doc.specialty === activeFilter;
+        return doctors.filter(doc => {
+            const matchSearch = doc.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                doc.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchFilter = activeFilter === 'All Specialists' || doc.specialization === activeFilter;
             return matchSearch && matchFilter;
         });
-    }, [searchTerm, activeFilter]);
+    }, [doctors, searchTerm, activeFilter]);
 
     const totalFound = filteredDoctors.length;
     const visibleDoctors = filteredDoctors.slice(0, visibleCount);
 
     const handleSelect = (doctor) => {
         if (onSelectDoctor) onSelectDoctor(doctor);
+        navigate('/book-appointment');
     };
 
     return (
@@ -47,10 +55,10 @@ function SelectSpecialist({ onNavigate, onSelectDoctor }) {
                     <span className="logo-dark">Appoint</span><span className="logo-blue">Med</span>
                 </div>
                 <nav className="sidebar-nav">
-                    <button className="nav-item" onClick={() => onNavigate('DASHBOARD')}>
+                    <button className="nav-item" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span> Dashboard
                     </button>
-                    <button className="nav-item" onClick={() => onNavigate('APPOINTMENTS')}>
+                    <button className="nav-item" onClick={() => navigate('/specialists')}>
                         <span className="material-symbols-outlined">calendar_today</span> Appointments
                     </button>
                     <button className="nav-item active">
@@ -59,14 +67,14 @@ function SelectSpecialist({ onNavigate, onSelectDoctor }) {
                     <button className="nav-item">
                         <span className="material-symbols-outlined">chat_bubble</span> Messages
                     </button>
-                    <button className="nav-item" onClick={() => onNavigate('PROFILE')}>
+                    <button className="nav-item" onClick={() => navigate('/profile')}>
                         <span className="material-symbols-outlined">settings</span> Settings
                     </button>
                 </nav>
                 <div className="sidebar-user">
                     <span className="material-symbols-outlined">account_circle</span>
                     <div>
-                        <p className="user-name">{savedUser?.name || 'Alex Johnson'}</p>
+                        <p className="user-name">{user?.name || 'Patient'}</p>
                         <p className="user-role">Patient Account</p>
                     </div>
                 </div>
@@ -75,26 +83,19 @@ function SelectSpecialist({ onNavigate, onSelectDoctor }) {
             <main className="specialist-main">
                 <div className="specialist-header">
                     <h1>Select Specialist</h1>
-                    <p>Find and book the right healthcare professional for your needs. Browse by specialty or search for a specific practitioner.</p>
+                    <p>Find and book the right healthcare professional for your needs.</p>
                 </div>
 
                 <div className="search-container">
                     <span className="material-symbols-outlined search-icon">search</span>
-                    <input
-                        type="text"
-                        placeholder="Search doctors, specialties, or clinics"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <input type="text" placeholder="Search doctors, specialties, or clinics"
+                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
 
                 <div className="filter-chips">
-                    {SPECIALTIES.map(spec => (
-                        <button
-                            key={spec}
-                            className={`chip ${activeFilter === spec ? 'active' : ''}`}
-                            onClick={() => { setActiveFilter(spec); setVisibleCount(8); }}
-                        >
+                    {specializations.map(spec => (
+                        <button key={spec} className={`chip ${activeFilter === spec ? 'active' : ''}`}
+                            onClick={() => { setActiveFilter(spec); setVisibleCount(8); }}>
                             {spec}
                         </button>
                     ))}
@@ -106,22 +107,31 @@ function SelectSpecialist({ onNavigate, onSelectDoctor }) {
                 </div>
 
                 <div className="doctors-grid">
-                    {visibleDoctors.map(doc => (
-                        <div className="doctor-card" key={doc.id}>
-                            <div className="card-avatar-wrapper">
-                                <div className="card-avatar">
-                                    <span className="material-symbols-outlined">person</span>
-                                </div>
-                                {doc.available && <span className="online-dot"></span>}
-                            </div>
-                            <h4>{doc.name}</h4>
-                            <p className="card-specialty">{doc.specialty}</p>
-                            <div className="card-rating">
-                                <span className="star">★</span> {doc.rating} <span className="review-count">({doc.reviews} reviews)</span>
-                            </div>
-                            <button className="btn-select" onClick={() => handleSelect(doc)}>Select</button>
+                    {loading ? (
+                        <div style={{gridColumn:'1/-1',textAlign:'center',padding:40,color:'#94a3b8'}}>Loading specialists...</div>
+                    ) : visibleDoctors.length === 0 ? (
+                        <div style={{gridColumn:'1/-1',textAlign:'center',padding:40,color:'#94a3b8'}}>
+                            <span className="material-symbols-outlined" style={{fontSize:48}}>person_search</span>
+                            <p>No specialists found matching your criteria</p>
                         </div>
-                    ))}
+                    ) : (
+                        visibleDoctors.map(doc => (
+                            <div className="doctor-card" key={doc.id}>
+                                <div className="card-avatar-wrapper">
+                                    <div className="card-avatar">
+                                        <span className="material-symbols-outlined">person</span>
+                                    </div>
+                                    {doc.available && <span className="online-dot"></span>}
+                                </div>
+                                <h4>{doc.name}</h4>
+                                <p className="card-specialty">{doc.specialization}</p>
+                                <div className="card-rating">
+                                    <span className="star">★</span> {doc.rating?.toFixed(1) || '4.5'} <span className="review-count">({doc.reviews || 0} reviews)</span>
+                                </div>
+                                <button className="btn-select" onClick={() => handleSelect(doc)}>Select</button>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 {visibleCount < totalFound && (

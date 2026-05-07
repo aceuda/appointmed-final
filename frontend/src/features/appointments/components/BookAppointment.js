@@ -1,21 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, useToast } from '../../../App';
+import { doctorAPI, appointmentAPI } from '../../../shared/services/api';
 import './BookAppointment.css';
 
-const MORNING_SLOTS = ['09:00 AM', '09:30 AM', '10:00 AM', '10:45 AM', '11:15 AM', '11:45 AM'];
-const AFTERNOON_SLOTS = ['02:00 PM', '02:30 PM', '03:15 PM', '04:00 PM'];
+function BookAppointment({ doctor, onConfirm }) {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const showToast = useToast();
 
-function BookAppointment({ doctor, onBack, onConfirm }) {
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date().getDate());
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [reason, setReason] = useState('');
-    const [currentMonth, setCurrentMonth] = useState(new Date(2023, 9)); // October 2023
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [allSlots, setAllSlots] = useState([]); // [{time, status, patientName?}]
+    const [loadingSlots, setLoadingSlots] = useState(false);
+    const [booking, setBooking] = useState(false);
 
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const monthName = currentMonth.toLocaleString('default', { month: 'long' });
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
+    const firstDayOfWeek = new Date(year, month, 1).getDay();
 
     const calendarCells = useMemo(() => {
         const cells = [];
@@ -33,25 +40,126 @@ function BookAppointment({ doctor, onBack, onConfirm }) {
         return cellDate < todayClear;
     };
 
+    // Fetch ALL slots with status when date is selected
+    useEffect(() => {
+        if (!selectedDate || !doctor) return;
+        const fetchSlots = async () => {
+            setLoadingSlots(true);
+            try {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+                const res = await doctorAPI.getSlotsWithStatus(doctor.id, dateStr);
+                setAllSlots(res.data);
+            } catch {
+                setAllSlots([]);
+            }
+            setLoadingSlots(false);
+        };
+        fetchSlots();
+        setSelectedSlot(null);
+    }, [selectedDate, doctor, year, month]);
+
     const prevMonth = () => setCurrentMonth(new Date(year, month - 1));
     const nextMonth = () => setCurrentMonth(new Date(year, month + 1));
 
-    const handleConfirm = () => {
-        if (!selectedDate || !selectedSlot) {
-            alert('Please select a date and time slot.');
-            return;
-        }
-        const bookingDetails = {
-            doctor,
-            date: `${monthName} ${selectedDate}, ${year}`,
-            time: selectedSlot,
-            reason
-        };
-        if (onConfirm) onConfirm(bookingDetails);
+    const formatTime = (time) => {
+        const [h, m] = time.split(':');
+        const hour = parseInt(h);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const h12 = hour % 12 || 12;
+        return `${h12}:${m} ${ampm}`;
     };
 
-    // Breadcrumb step
+    // Check if the selected date is today
+    const isSelectedDateToday = year === today.getFullYear() && month === today.getMonth() && selectedDate === today.getDate();
+
+    // Check if a slot's time has already passed (only relevant for today)
+    const isSlotPast = (timeStr) => {
+        if (!isSelectedDateToday) return false;
+        const now = new Date();
+        const [h, m] = timeStr.split(':').map(Number);
+        const slotDate = new Date(year, month, selectedDate, h, m, 0);
+        return slotDate <= now;
+    };
+
+    const morningSlots = allSlots.filter(s => parseInt(s.time.split(':')[0]) < 12);
+    const afternoonSlots = allSlots.filter(s => parseInt(s.time.split(':')[0]) >= 12);
+
+    const handleConfirm = async () => {
+        if (!selectedDate || !selectedSlot) {
+            showToast('Please select a date and time slot.', 'error');
+            return;
+        }
+        setBooking(true);
+        try {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+            await appointmentAPI.create({
+                patientId: user.id,
+                doctorId: doctor.id,
+                appointmentDate: dateStr,
+                appointmentTime: selectedSlot,
+                reason: reason || 'General Consultation',
+                fee: 1500
+            });
+
+            const bookingDetails = {
+                doctor,
+                date: `${monthName} ${selectedDate}, ${year}`,
+                time: formatTime(selectedSlot),
+                reason: reason || 'General Consultation'
+            };
+            if (onConfirm) onConfirm(bookingDetails);
+            showToast('Appointment booked successfully!', 'success');
+            navigate('/booking-confirmed');
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to book appointment';
+            showToast(msg, 'error');
+            // If slot was taken (409 Conflict), refresh slots to show updated availability
+            if (err.response?.status === 409) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+                try {
+                    const res = await doctorAPI.getSlotsWithStatus(doctor.id, dateStr);
+                    setAllSlots(res.data);
+                    setSelectedSlot(null);
+                } catch {}
+            }
+        }
+        setBooking(false);
+    };
+
     const step = !selectedDate ? 1 : !selectedSlot ? 2 : 3;
+
+    const renderSlot = (slot) => {
+        const isBooked = slot.status === 'booked';
+        const isBlocked = slot.status === 'blocked';
+        const isPastSlot = isSlotPast(slot.time);
+        const isDisabled = isBooked || isBlocked || isPastSlot;
+        const isSelected = selectedSlot === slot.time && !isDisabled;
+        return (
+            <button
+                key={slot.time}
+                className={`time-slot ${isSelected ? 'selected' : ''} ${isBooked ? 'booked' : ''} ${isBlocked ? 'blocked-unavailable' : ''} ${isPastSlot && !isBooked && !isBlocked ? 'past' : ''}`}
+                onClick={() => !isDisabled && setSelectedSlot(slot.time)}
+                disabled={isDisabled}
+                title={isPastSlot ? 'This time has already passed' : isBooked ? 'Booked' : isBlocked ? 'Not available' : 'Available — click to select'}
+            >
+                <span className="slot-time-text">{formatTime(slot.time)}</span>
+                {isBooked && <span className="slot-booked-badge">Booked</span>}
+                {isBlocked && <span className="slot-unavailable-badge">Not Available</span>}
+                {isPastSlot && !isBooked && !isBlocked && <span className="slot-past-badge">Past</span>}
+            </button>
+        );
+    };
+
+    if (!doctor) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Lexend' }}>
+                <p style={{ color: '#64748b' }}>No doctor selected</p>
+                <button onClick={() => navigate('/specialists')} style={{ marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#2563EB', color: '#fff', cursor: 'pointer' }}>
+                    Browse Specialists
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="booking-page">
@@ -74,37 +182,31 @@ function BookAppointment({ doctor, onBack, onConfirm }) {
             </div>
 
             <div className="booking-layout">
-                {/* Left Sidebar - Doctor Info */}
                 <aside className="booking-sidebar">
                     <div className="selected-doctor-card">
                         <p className="label-upper">SELECTED PROFESSIONAL</p>
                         <div className="doc-info">
-                            <div className="doc-avatar">
-                                <span className="material-symbols-outlined">person</span>
-                            </div>
+                            <div className="doc-avatar"><span className="material-symbols-outlined">person</span></div>
                             <div>
-                                <h3>{doctor?.name || 'Dr. Sarah Jenkins'}</h3>
-                                <p className="doc-specialty">{doctor?.specialty ? `Senior ${doctor.specialty}` : 'Senior Cardiologist'}</p>
-                                <p className="doc-exp">15 years experience</p>
+                                <h3>{doctor.name}</h3>
+                                <p className="doc-specialty">Senior {doctor.specialization || 'Specialist'}</p>
+                                <p className="doc-exp">Experienced Practitioner</p>
                             </div>
                         </div>
                         <div className="doc-meta-list">
-                            <p>★ {doctor?.rating || 4.9} ({doctor?.reviews || 120}+ reviews)</p>
-                            <p><span className="material-symbols-outlined">location_on</span> Central Medical Plaza, NY</p>
-                            <p><span className="material-symbols-outlined">payments</span> ₱150 - ₱200 per visit</p>
+                            <p>★ {doctor.rating?.toFixed(1) || '4.5'} ({doctor.reviews || 0}+ reviews)</p>
+                            <p><span className="material-symbols-outlined">location_on</span> {doctor.clinicAddress || 'Medical Center'}</p>
+                            <p><span className="material-symbols-outlined">payments</span> ₱1,500 per visit</p>
                         </div>
-                        <button className="btn-change-doc" onClick={onBack}>Change Doctor</button>
+                        <button className="btn-change-doc" onClick={() => navigate('/specialists')}>Change Doctor</button>
                     </div>
-
                     <div className="booking-note">
                         <p className="note-title"><span className="material-symbols-outlined">info</span> Booking Note</p>
-                        <p>Cancellations are accepted up to 24 hours before the appointment. Please arrive 10 minutes early for check-in.</p>
+                        <p>Cancellations are accepted up to 24 hours before the appointment. Please arrive 10 minutes early.</p>
                     </div>
                 </aside>
 
-                {/* Right Content - Calendar + Time */}
                 <div className="booking-content">
-                    {/* Step 1: Calendar */}
                     <section className="booking-section">
                         <h2><span className="step-num">1.</span> Select Date</h2>
                         <div className="calendar-header">
@@ -117,66 +219,67 @@ function BookAppointment({ doctor, onBack, onConfirm }) {
                                 <div key={d} className="cal-day-header">{d}</div>
                             ))}
                             {calendarCells.map((day, i) => (
-                                <button
-                                    key={i}
+                                <button key={i}
                                     className={`cal-day ${!day ? 'empty' : ''} ${selectedDate === day ? 'selected' : ''} ${isToday(day) ? 'today' : ''} ${isPast(day) ? 'past' : ''}`}
                                     onClick={() => day && !isPast(day) && setSelectedDate(day)}
-                                    disabled={!day || isPast(day)}
-                                >
+                                    disabled={!day || isPast(day)}>
                                     {day}
                                 </button>
                             ))}
                         </div>
                     </section>
 
-                    {/* Step 2: Time Slots */}
                     <section className="booking-section">
                         <h2><span className="step-num">2.</span> Available Time Slots</h2>
-                        <div className="time-group">
-                            <p className="time-label"><span className="material-symbols-outlined">light_mode</span> MORNING</p>
-                            <div className="time-slots">
-                                {MORNING_SLOTS.map(slot => (
-                                    <button
-                                        key={slot}
-                                        className={`time-slot ${selectedSlot === slot ? 'selected' : ''}`}
-                                        onClick={() => setSelectedSlot(slot)}
-                                    >{slot}</button>
-                                ))}
-                            </div>
+                        {/* Slot legend */}
+                        <div className="slot-legend">
+                            <span className="legend-item"><span className="legend-dot available"></span> Available</span>
+                            <span className="legend-item"><span className="legend-dot booked"></span> Booked</span>
+                            <span className="legend-item"><span className="legend-dot unavailable-legend"></span> Not Available</span>
+                            <span className="legend-item"><span className="legend-dot past-legend"></span> Past</span>
+                            <span className="legend-item"><span className="legend-dot selected-legend"></span> Selected</span>
                         </div>
-                        <div className="time-group">
-                            <p className="time-label"><span className="material-symbols-outlined">dark_mode</span> AFTERNOON</p>
-                            <div className="time-slots">
-                                {AFTERNOON_SLOTS.map(slot => (
-                                    <button
-                                        key={slot}
-                                        className={`time-slot ${selectedSlot === slot ? 'selected' : ''}`}
-                                        onClick={() => setSelectedSlot(slot)}
-                                    >{slot}</button>
-                                ))}
-                            </div>
-                        </div>
+                        {loadingSlots ? (
+                            <p style={{ color: '#94a3b8', padding: 16 }}>Loading available slots...</p>
+                        ) : !selectedDate ? (
+                            <p style={{ color: '#94a3b8', padding: 16 }}>Select a date to see available slots</p>
+                        ) : (
+                            <>
+                                {morningSlots.length > 0 && (
+                                    <div className="time-group">
+                                        <p className="time-label"><span className="material-symbols-outlined">light_mode</span> MORNING</p>
+                                        <div className="time-slots">
+                                            {morningSlots.map(renderSlot)}
+                                        </div>
+                                    </div>
+                                )}
+                                {afternoonSlots.length > 0 && (
+                                    <div className="time-group">
+                                        <p className="time-label"><span className="material-symbols-outlined">dark_mode</span> AFTERNOON</p>
+                                        <div className="time-slots">
+                                            {afternoonSlots.map(renderSlot)}
+                                        </div>
+                                    </div>
+                                )}
+                                {morningSlots.length === 0 && afternoonSlots.length === 0 && (
+                                    <p style={{ color: '#94a3b8', padding: 16 }}>No slots available for this date</p>
+                                )}
+                            </>
+                        )}
                     </section>
 
-                    {/* Step 3: Reason */}
                     <section className="booking-section">
                         <h2><span className="step-num">3.</span> Reason for Visit</h2>
-                        <textarea
-                            className="reason-input"
-                            placeholder="Please describe your symptoms or reason for the appointment (optional)..."
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            rows={4}
-                        />
+                        <textarea className="reason-input" placeholder="Please describe your symptoms or reason for the appointment (optional)..."
+                            value={reason} onChange={(e) => setReason(e.target.value)} rows={4} />
                     </section>
 
-                    {/* Actions */}
                     <div className="booking-actions">
-                        <button className="btn-back" onClick={onBack}>
+                        <button className="btn-back" onClick={() => navigate('/specialists')}>
                             <span className="material-symbols-outlined">arrow_back</span> Back
                         </button>
-                        <button className="btn-confirm" onClick={handleConfirm}>
-                            Confirm Booking <span className="material-symbols-outlined">check_circle</span>
+                        <button className="btn-confirm" onClick={handleConfirm} disabled={booking}>
+                            {booking ? 'Booking...' : 'Confirm Booking'} <span className="material-symbols-outlined">check_circle</span>
                         </button>
                     </div>
                 </div>

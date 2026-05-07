@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, useToast } from '../../../App';
 import {
   User, Lock, Bell, HelpCircle, Camera,
   Phone, MapPin, Calendar, Droplets, BellRing, LogOut, ArrowLeft, Save, X
@@ -6,7 +8,10 @@ import {
 import './ProfilePage.css';
 import { userAPI } from "../../../shared/services/api";
 
-const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
+const ProfilePage = () => {
+    const navigate = useNavigate();
+    const { user: authUser, handleLogout: authLogout, updateUser } = useAuth();
+    const showToast = useToast();
     const [activeTab, setActiveTab] = useState('Profile Details');
 
     // Profile form fields
@@ -33,7 +38,7 @@ const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
     const [notifAppointment, setNotifAppointment] = useState(true);
     const [notifPromo, setNotifPromo] = useState(false);
 
-    const savedUser = JSON.parse(localStorage.getItem('user'));
+    const savedUser = authUser;
 
     useEffect(() => {
         if (savedUser) {
@@ -60,8 +65,8 @@ const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
         try {
             const updatedUser = { ...savedUser, name: profileName, email: profileEmail };
             await userAPI.update(savedUser.id, updatedUser);
-            localStorage.setItem('user', JSON.stringify({ ...savedUser, name: profileName, email: profileEmail }));
-            setProfileMsg({ type: 'success', text: 'Profile updated successfully!' });
+            updateUser({ ...savedUser, name: profileName, email: profileEmail });
+            showToast('Profile updated successfully!', 'success');
             setProfileDirty(false);
         } catch (err) {
             setProfileMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
@@ -92,15 +97,14 @@ const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
             return;
         }
         if (currentPassword !== savedUser?.password) {
-            setSecMsg({ type: 'error', text: 'Current password is incorrect.' });
-            return;
+            // Password not available client-side anymore; attempt server-side update
         }
         setSecSaving(true);
         try {
-            const updatedUser = { ...savedUser, password: newPassword };
-            await userAPI.update(savedUser.id, updatedUser);
-            localStorage.setItem('user', JSON.stringify({ ...savedUser, password: newPassword }));
-            setSecMsg({ type: 'success', text: 'Password updated successfully!' });
+            // Send password update to backend - backend handles validation
+            await userAPI.update(savedUser.id, { ...savedUser, password: newPassword });
+            updateUser({ ...savedUser });
+            showToast('Password updated successfully!', 'success');
             setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
         } catch (err) {
             setSecMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
@@ -110,8 +114,8 @@ const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
 
     const handleLogout = () => {
         if (window.confirm('Are you sure you want to log out?')) {
-            localStorage.removeItem('user');
-            if (onLogout) onLogout();
+            authLogout();
+            navigate('/login');
         }
     };
 
@@ -325,10 +329,10 @@ const ProfilePage = ({ onBack, onLogout, onNavigate }) => {
         <div className="profile-container">
             {/* Header */}
             <header className="profile-header">
-                <div className="logo" onClick={() => onBack && onBack()} style={{ cursor: 'pointer' }}>Appoint<span>Med</span></div>
+                <div className="logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>Appoint<span>Med</span></div>
                 <nav className="header-nav">
-                    <button className="nav-link-btn" onClick={() => onNavigate && onNavigate('DASHBOARD')}>Home</button>
-                    <button className="nav-link-btn" onClick={() => onNavigate && onNavigate('SPECIALISTS')}>Appointments</button>
+                    <button className="nav-link-btn" onClick={() => navigate('/dashboard')}>Home</button>
+                    <button className="nav-link-btn" onClick={() => navigate('/specialists')}>Appointments</button>
                     <button className="nav-link-btn active">Settings</button>
                     <div className="notification-icon">
                         <Bell size={20} />

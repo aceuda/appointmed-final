@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, useToast } from '../../../App';
 import { userAPI } from '../../../shared/services/api';
 import './AdminDashboard.css';
 
 const ITEMS_PER_PAGE = 4;
 
-function AdminDashboard({ onLogout, onNavigate }) {
-    const savedUser = JSON.parse(localStorage.getItem('user'));
+function AdminDashboard() {
+    const navigate = useNavigate();
+    const { user: authUser, handleLogout } = useAuth();
+    const showToast = useToast();
+    const savedUser = authUser;
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -103,7 +108,7 @@ function AdminDashboard({ onLogout, onNavigate }) {
                     <span className="logo-dark">Appoint</span><span className="logo-blue">Med</span>
                 </div>
                 <nav className="sidebar-nav">
-                    <button className="nav-item" onClick={() => onNavigate && onNavigate('DASHBOARD')}>
+                    <button className="nav-item" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span> Dashboard
                     </button>
                     <button className="nav-item active">
@@ -118,7 +123,7 @@ function AdminDashboard({ onLogout, onNavigate }) {
                     <button className="nav-item">
                         <span className="material-symbols-outlined">assessment</span> Reports
                     </button>
-                    <button className="nav-item" onClick={() => onNavigate && onNavigate('PROFILE')}>
+                    <button className="nav-item" onClick={() => navigate('/profile')}>
                         <span className="material-symbols-outlined">settings</span> Settings
                     </button>
                 </nav>

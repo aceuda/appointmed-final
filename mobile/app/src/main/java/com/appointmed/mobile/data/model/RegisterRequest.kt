@@ -11,5 +11,6 @@ data class RegisterRequest(
     val specialization: String? = null,
     val licenseNumber: String? = null,
     val phone: String? = null,
-    val clinicAddress: String? = null
+    val clinicAddress: String? = null,
+    val consultationFee: Int? = null
 )

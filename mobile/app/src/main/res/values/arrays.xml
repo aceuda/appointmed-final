@@ -17,4 +17,37 @@
         <item>AB+</item>
         <item>AB-</item>
     </string-array>
+
+    <string-array name="specialization_options">
+        <item>Select Specialization</item>
+        <item>Allergology</item>
+        <item>Anesthesiology</item>
+        <item>Cardiology</item>
+        <item>Dermatology</item>
+        <item>Emergency Medicine</item>
+        <item>Endocrinology</item>
+        <item>Family Medicine</item>
+        <item>Gastroenterology</item>
+        <item>General Surgery</item>
+        <item>Geriatrics</item>
+        <item>Hematology</item>
+        <item>Infectious Disease</item>
+        <item>Internal Medicine</item>
+        <item>Nephrology</item>
+        <item>Neurology</item>
+        <item>Obstetrics &amp; Gynecology</item>
+        <item>Oncology</item>
+        <item>Ophthalmology</item>
+        <item>Orthopedics</item>
+        <item>Otolaryngology (ENT)</item>
+        <item>Pathology</item>
+        <item>Pediatrics</item>
+        <item>Physical Medicine &amp; Rehabilitation</item>
+        <item>Psychiatry</item>
+        <item>Pulmonology</item>
+        <item>Radiology</item>
+        <item>Rheumatology</item>
+        <item>Sports Medicine</item>
+        <item>Urology</item>
+    </string-array>
 </resources>

@@ -249,12 +249,129 @@
     font-weight: 500;
     cursor: pointer;
     transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    min-width: 100px;
 }
-.time-slot:hover { border-color: #4f7df9; color: #4f7df9; }
+.time-slot:hover:not(.booked) { border-color: #4f7df9; color: #4f7df9; }
 .time-slot.selected {
     background: #475569;
     color: #fff;
     border-color: #475569;
+}
+.time-slot.booked {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b0b8c4;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+.time-slot.booked .slot-time-text {
+    text-decoration: line-through;
+    color: #c4b5b5;
+}
+.slot-booked-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #ef4444;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+/* --- Slot Legend --- */
+.slot-legend {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 16px;
+    padding: 0 2px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+}
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+}
+.legend-dot.available {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+}
+.legend-dot.booked {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+}
+.legend-dot.past-legend {
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+}
+.legend-dot.selected-legend {
+    background: #475569;
+    border: 1.5px solid #475569;
+}
+
+/* --- Past Time Slots --- */
+.time-slot.past {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #b0b8c4;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.time-slot.past .slot-time-text {
+    text-decoration: line-through;
+    color: #cbd5e1;
+}
+.slot-past-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #94a3b8;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+/* --- Blocked / Not Available Slots (doctor blocked) --- */
+.time-slot.blocked-unavailable {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #b0b8c4;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+.time-slot.blocked-unavailable .slot-time-text {
+    text-decoration: line-through;
+    color: #d4a373;
+}
+.slot-unavailable-badge {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    background: #ea580c;
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+.legend-dot.unavailable-legend {
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
 }
 
 /* --- Reason --- */
@@ -313,8 +430,91 @@
 .btn-confirm:hover { background: #4f7df9; }
 .btn-confirm .material-symbols-outlined { font-size: 18px; }
 
+/* ===== Mobile Responsiveness ===== */
 @media (max-width: 900px) {
-    .booking-layout { flex-direction: column; padding: 16px; }
+    .booking-layout { flex-direction: column; padding: 16px; gap: 20px; }
     .booking-sidebar { width: 100%; }
     .calendar-header { margin-top: 0; }
+}
+
+@media (max-width: 768px) {
+    .booking-topbar { padding: 12px 16px; }
+    .booking-logo { font-size: 18px; }
+    .topbar-actions { gap: 6px; }
+    .icon-btn { width: 36px; height: 36px; }
+
+    .booking-breadcrumb {
+        padding: 10px 16px;
+        font-size: 11px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .bc-sep { margin: 0 4px; }
+
+    .booking-layout {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .selected-doctor-card { padding: 16px; }
+    .doc-main-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    .doc-avatar-wrapper { margin: 0 auto; }
+
+    .booking-content { padding: 0; }
+    .booking-section h2 { font-size: 1rem; }
+
+    .calendar-grid { gap: 4px; }
+    .cal-day {
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
+    }
+
+    .time-slots {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .time-slot {
+        min-width: auto;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    .slot-legend { flex-wrap: wrap; gap: 10px; }
+
+    .reason-input { padding: 12px; font-size: 0.85rem; }
+
+    .booking-actions {
+        flex-direction: column;
+    }
+    .booking-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .booking-summary { padding: 16px; }
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-topbar { padding: 10px 12px; }
+    .booking-layout { padding: 12px; }
+    .cal-day {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+    .time-slots { gap: 6px; }
+    .time-slot { padding: 6px 8px; font-size: 11px; }
+    .slot-booked-badge,
+    .slot-past-badge,
+    .slot-unavailable-badge { font-size: 7px; padding: 1px 5px; }
+    .selected-doctor-card { border-radius: 12px; }
+    .booking-section h2 { font-size: 0.9rem; }
 }

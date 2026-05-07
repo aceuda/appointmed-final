@@ -99,6 +99,15 @@
             android:textColor="@color/textSecondary" />
     </LinearLayout>
 
+    <!-- Loading Spinner -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="24dp" />
+
     <!-- Doctor List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerDoctors"
@@ -121,8 +130,8 @@
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Home" android:textSize="10sp" android:textColor="@color/textSecondary" />
         </LinearLayout>
         <LinearLayout android:id="@+id/navSchedule" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_my_calendar" android:contentDescription="Schedule" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Schedule" android:textSize="10sp" android:textColor="@color/textSecondary" />
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_my_calendar" android:contentDescription="Appointments" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Appointments" android:textSize="10sp" android:textColor="@color/textSecondary" />
         </LinearLayout>
         <LinearLayout android:id="@+id/navDoctors" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
             <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_myplaces" android:contentDescription="Doctors" />

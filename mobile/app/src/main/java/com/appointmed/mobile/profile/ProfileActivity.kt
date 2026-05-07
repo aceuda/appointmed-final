@@ -32,11 +32,17 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
     private lateinit var inputAddress: EditText
     private lateinit var inputBirthDate: EditText
     private lateinit var spinnerBloodType: Spinner
+    private lateinit var inputProfileFee: EditText
+    private lateinit var layoutProfileFee: View
+    private lateinit var layoutProfileDOBAndBlood: View
     private lateinit var buttonSaveChanges: Button
     private lateinit var buttonDiscardChanges: Button
     private lateinit var buttonLogout: Button
 
     // Change password fields
+    private lateinit var layoutPasswordHeader: View
+    private lateinit var layoutPasswordContent: View
+    private lateinit var imagePasswordArrow: ImageView
     private lateinit var inputCurrentPassword: EditText
     private lateinit var inputNewPassword: EditText
     private lateinit var inputConfirmNewPassword: EditText
@@ -68,11 +74,17 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
         inputAddress = findViewById(R.id.inputAddress)
         inputBirthDate = findViewById(R.id.inputBirthDate)
         spinnerBloodType = findViewById(R.id.spinnerBloodType)
+        inputProfileFee = findViewById(R.id.inputProfileFee)
+        layoutProfileFee = findViewById(R.id.layoutProfileFee)
+        layoutProfileDOBAndBlood = findViewById(R.id.layoutProfileDOBAndBlood)
         buttonSaveChanges = findViewById(R.id.buttonSaveChanges)
         buttonDiscardChanges = findViewById(R.id.buttonDiscardChanges)
         buttonLogout = findViewById(R.id.buttonLogout)
 
         // Change password bindings
+        layoutPasswordHeader = findViewById(R.id.layoutPasswordHeader)
+        layoutPasswordContent = findViewById(R.id.layoutPasswordContent)
+        imagePasswordArrow = findViewById(R.id.imagePasswordArrow)
         inputCurrentPassword = findViewById(R.id.inputCurrentPassword)
         inputNewPassword = findViewById(R.id.inputNewPassword)
         inputConfirmNewPassword = findViewById(R.id.inputConfirmNewPassword)
@@ -95,6 +107,7 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
                 address = inputAddress.text.toString().trim(),
                 birthDate = inputBirthDate.text.toString().trim(),
                 bloodType = spinnerBloodType.selectedItem.toString().takeIf { it != "Select" } ?: "",
+                consultationFee = inputProfileFee.text.toString().trim(),
                 avatarData = selectedAvatarData
             )
         }
@@ -110,6 +123,14 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
             showLogoutConfirmation()
         }
 
+        findViewById<View>(R.id.navHome).setOnClickListener { presenter.onHomeClicked() }
+        findViewById<View>(R.id.navSchedule).setOnClickListener { presenter.onScheduleClicked() }
+        findViewById<View>(R.id.navRecords).setOnClickListener { presenter.onRecordsClicked() }
+
+        layoutPasswordHeader.setOnClickListener {
+            togglePasswordSection()
+        }
+
         buttonUpdatePassword.setOnClickListener {
             presenter.changePassword(
                 currentPassword = inputCurrentPassword.text.toString().trim(),
@@ -119,10 +140,21 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
         }
     }
 
-    override fun populateFields(user: User, phone: String?, address: String?, birthDate: String?, bloodType: String?) {
+    override fun populateFields(user: User, phone: String?, address: String?, birthDate: String?, bloodType: String?, consultationFee: Double) {
         inputProfileName.setText(user.name)
         inputProfileEmail.setText(user.email)
-        textProfilePatientId.text = getString(R.string.profile_patient_id, user.id)
+        
+        if (user.role == "DOCTOR") {
+            textProfilePatientId.text = "Doctor ID: #${user.id}"
+            layoutProfileFee.visibility = View.VISIBLE
+            layoutProfileDOBAndBlood.visibility = View.GONE
+            inputProfileFee.setText(consultationFee.toString())
+        } else {
+            textProfilePatientId.text = getString(R.string.profile_patient_id, user.id)
+            layoutProfileFee.visibility = View.GONE
+            layoutProfileDOBAndBlood.visibility = View.VISIBLE
+        }
+
         inputPhone.setText(phone ?: "")
         inputAddress.setText(address ?: "")
         inputBirthDate.setText(birthDate ?: "")
@@ -199,8 +231,31 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
         finish()
     }
 
+    override fun navigateToHome() {
+        startActivity(Intent(this, com.appointmed.mobile.dashboard.DashboardActivity::class.java))
+        finish()
+    }
+
+    override fun navigateToAppointments() {
+        startActivity(Intent(this, com.appointmed.mobile.appointments.AppointmentsActivity::class.java))
+    }
+
+    override fun navigateToRecords() {
+        Toast.makeText(this, "Health Records feature coming soon!", Toast.LENGTH_SHORT).show()
+    }
+
     override fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun togglePasswordSection() {
+        if (layoutPasswordContent.visibility == View.VISIBLE) {
+            layoutPasswordContent.visibility = View.GONE
+            imagePasswordArrow.rotation = 0f
+        } else {
+            layoutPasswordContent.visibility = View.VISIBLE
+            imagePasswordArrow.rotation = 180f
+        }
     }
 
     override fun onResume() {

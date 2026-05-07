@@ -1,5 +1,6 @@
 package com.appointmed.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +9,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -21,6 +23,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(nullable = false)
@@ -33,7 +36,9 @@ public class User {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String avatarData;
 
-    public String getName() {
-        return this.name;
-    }
+    private String phone;
+    private String address;
+    private String gender;
+    private String birthDate;
+    private String bloodType;
 }

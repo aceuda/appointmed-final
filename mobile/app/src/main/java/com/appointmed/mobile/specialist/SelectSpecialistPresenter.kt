@@ -1,43 +1,97 @@
 package com.appointmed.mobile.specialist
 
+import android.content.Context
+import com.appointmed.mobile.data.model.DoctorResponse
+import com.appointmed.mobile.data.network.ApiClient
+import com.appointmed.mobile.data.network.ApiService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 class SelectSpecialistPresenter(
-    private var view: SelectSpecialistContract.View?
+    private var view: SelectSpecialistContract.View?,
+    context: Context
 ) : SelectSpecialistContract.Presenter {
 
-    private val allDoctors = listOf(
-        DoctorItem(1, "Dr. Marcus Thorne", "Cardiologist", "St. Luke's Medical Center", 1200, 4.9, true),
-        DoctorItem(2, "Dr. Elena Rodriguez", "Dermatologist", "Makati Medical Center", 1500, 4.8, true),
-        DoctorItem(3, "Dr. Julian Sison", "Pediatrician", "Children's Hospital Manila", 900, 5.0, true),
-        DoctorItem(4, "Dr. Sarah Lim", "General Physician", "The Medical City", 800, 4.7, false),
-        DoctorItem(5, "Dr. Michael Chen", "Cardiologist", "Asian Hospital", 1400, 4.6, true),
-        DoctorItem(6, "Dr. Ana Reyes", "Dermatologist", "Manila Doctors Hospital", 1300, 4.9, true),
-        DoctorItem(7, "Dr. Robert Cruz", "Neurologist", "St. Luke's BGC", 1800, 4.8, true),
-        DoctorItem(8, "Dr. Patricia Santos", "Pediatrician", "Philippine General Hospital", 700, 4.5, true)
-    )
-
+    private val apiService: ApiService = ApiClient.create(context)
+    private var allDoctors: List<DoctorItem> = emptyList()
     private var currentFilter = "All"
     private var currentQuery = ""
 
     override fun loadDoctors() {
-        view?.showDoctors(allDoctors)
-        view?.showFilteredDoctors(allDoctors, allDoctors.size)
+        view?.showLoading()
+        apiService.getDoctors().enqueue(object : Callback<List<DoctorResponse>> {
+            override fun onResponse(call: Call<List<DoctorResponse>>, response: Response<List<DoctorResponse>>) {
+                view?.hideLoading()
+                if (response.isSuccessful) {
+                    val doctors = response.body() ?: emptyList()
+                    allDoctors = doctors.map { it.toDoctorItem() }
+                    applyLocalSearch()
+                } else {
+                    view?.showError("Failed to load doctors")
+                }
+            }
+
+            override fun onFailure(call: Call<List<DoctorResponse>>, t: Throwable) {
+                view?.hideLoading()
+                view?.showError("Network error: ${t.message}")
+            }
+        })
+    }
+
+    override fun loadSpecializations() {
+        apiService.getSpecializations().enqueue(object : Callback<List<String>> {
+            override fun onResponse(call: Call<List<String>>, response: Response<List<String>>) {
+                if (response.isSuccessful) {
+                    val specs = response.body() ?: emptyList()
+                    view?.showSpecializations(specs)
+                }
+            }
+            override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                // Silently fail or log
+            }
+        })
     }
 
     override fun filterBySpecialty(specialty: String) {
         currentFilter = specialty
-        applyFilters()
+        if (specialty == "All") {
+            // Reload all from API
+            apiService.getDoctors().enqueue(object : Callback<List<DoctorResponse>> {
+                override fun onResponse(call: Call<List<DoctorResponse>>, response: Response<List<DoctorResponse>>) {
+                    if (response.isSuccessful) {
+                        val doctors = response.body() ?: emptyList()
+                        allDoctors = doctors.map { it.toDoctorItem() }
+                        applyLocalSearch()
+                    }
+                }
+                override fun onFailure(call: Call<List<DoctorResponse>>, t: Throwable) {
+                    view?.showError("Network error: ${t.message}")
+                }
+            })
+        } else {
+            apiService.getDoctors(specialty).enqueue(object : Callback<List<DoctorResponse>> {
+                override fun onResponse(call: Call<List<DoctorResponse>>, response: Response<List<DoctorResponse>>) {
+                    if (response.isSuccessful) {
+                        val doctors = response.body() ?: emptyList()
+                        allDoctors = doctors.map { it.toDoctorItem() }
+                        applyLocalSearch()
+                    }
+                }
+                override fun onFailure(call: Call<List<DoctorResponse>>, t: Throwable) {
+                    view?.showError("Network error: ${t.message}")
+                }
+            })
+        }
     }
 
     override fun searchDoctors(query: String) {
         currentQuery = query
-        applyFilters()
+        applyLocalSearch()
     }
 
-    private fun applyFilters() {
+    private fun applyLocalSearch() {
         var filtered = allDoctors
-        if (currentFilter != "All") {
-            filtered = filtered.filter { it.specialty.contains(currentFilter, ignoreCase = true) }
-        }
         if (currentQuery.isNotBlank()) {
             filtered = filtered.filter {
                 it.name.contains(currentQuery, ignoreCase = true) ||
@@ -51,7 +105,7 @@ class SelectSpecialistPresenter(
         if (doctor.available) {
             view?.navigateToBooking(doctor)
         } else {
-            view?.showError("This doctor is fully booked. You can join the waitlist.")
+            view?.showError("This doctor is currently unavailable.")
         }
     }
 
@@ -63,7 +117,23 @@ class SelectSpecialistPresenter(
         view?.navigateToProfile()
     }
 
+    override fun onScheduleClicked() {
+        view?.navigateToAppointments()
+    }
+
     override fun onDestroy() {
         view = null
+    }
+
+    private fun DoctorResponse.toDoctorItem(): DoctorItem {
+        return DoctorItem(
+            id = this.id,
+            name = this.name,
+            specialty = this.specialization,
+            clinic = this.clinicAddress ?: "Clinic not specified",
+            fee = this.consultationFee,
+            rating = this.rating,
+            available = this.available
+        )
     }
 }

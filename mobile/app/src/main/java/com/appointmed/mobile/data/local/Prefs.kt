@@ -21,6 +21,7 @@ class Prefs(context: Context) {
             .putString(KEY_USER_AVATAR, user.avatarUrl)
             .putString(KEY_USER_AVATAR_DATA, user.avatarData)
             .putString(KEY_USER_PASSWORD, user.password)
+            .putFloat(KEY_USER_FEE, user.consultationFee.toFloat())
             .apply()
     }
 
@@ -41,7 +42,8 @@ class Prefs(context: Context) {
             password = sharedPreferences.getString(KEY_USER_PASSWORD, "") ?: "",
             role = sharedPreferences.getString(KEY_USER_ROLE, "") ?: "",
             avatarUrl = sharedPreferences.getString(KEY_USER_AVATAR, null),
-            avatarData = sharedPreferences.getString(KEY_USER_AVATAR_DATA, "") ?: ""
+            avatarData = sharedPreferences.getString(KEY_USER_AVATAR_DATA, null),
+            consultationFee = sharedPreferences.getFloat(KEY_USER_FEE, 0f).toDouble()
         )
     }
 
@@ -69,5 +71,6 @@ class Prefs(context: Context) {
         private const val KEY_USER_ADDRESS = "key_user_address"
         private const val KEY_USER_BIRTH_DATE = "key_user_birth_date"
         private const val KEY_USER_BLOOD_TYPE = "key_user_blood_type"
+        private const val KEY_USER_FEE = "key_user_fee"
     }
 }

@@ -3,18 +3,24 @@ package com.appointmed.mobile.booking
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.appointmed.mobile.R
+import com.google.android.flexbox.FlexboxLayout
 
 class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.View {
 
     private lateinit var presenter: BookAppointmentContract.Presenter
     private lateinit var calendarGrid: GridLayout
-    private lateinit var timeSlotsContainer: LinearLayout
+    private lateinit var timeSlotsContainer: FlexboxLayout
     private lateinit var monthLabel: TextView
     private lateinit var inputReason: EditText
+    private lateinit var btnContinue: Button
+    private lateinit var progressBar: ProgressBar
 
+    private var doctorId = 0L
     private var doctorName = ""
     private var doctorSpecialty = ""
 
@@ -22,36 +28,23 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_book_appointment)
 
-        doctorName = intent.getStringExtra("doctor_name") ?: "Dr. Sarah Smith"
-        doctorSpecialty = intent.getStringExtra("doctor_specialty") ?: "General Physician"
+        doctorId = intent.getLongExtra("doctor_id", 0L)
+        doctorName = intent.getStringExtra("doctor_name") ?: "Doctor"
+        doctorSpecialty = intent.getStringExtra("doctor_specialty") ?: ""
 
-        presenter = BookAppointmentPresenter(this, doctorName, doctorSpecialty)
+        presenter = BookAppointmentPresenter(this, doctorId, doctorName, doctorSpecialty, this)
 
         calendarGrid = findViewById(R.id.calendarGrid)
         monthLabel = findViewById(R.id.textCurrentMonth)
         inputReason = findViewById(R.id.inputReason)
-
-        // We'll use a LinearLayout wrapped in a FlexboxLayout container
-        // Since FlexboxLayout requires the library, we'll use a simpler approach
-        timeSlotsContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        // Replace the FlexboxLayout with our container
-        val parent = findViewById<android.view.ViewGroup>(R.id.timeSlotsContainer)
-        if (parent is android.view.ViewGroup) {
-            val parentOfSlots = parent.parent as? android.view.ViewGroup
-            val index = parentOfSlots?.indexOfChild(parent) ?: -1
-            if (index >= 0 && parentOfSlots != null) {
-                parentOfSlots.removeView(parent)
-                parentOfSlots.addView(timeSlotsContainer, index, parent.layoutParams)
-            }
-        }
+        timeSlotsContainer = findViewById(R.id.timeSlotsContainer)
+        btnContinue = findViewById(R.id.btnContinuePayment)
+        progressBar = findViewById(R.id.progressBarBooking)
 
         // Navigation
         findViewById<ImageView>(R.id.btnBackBooking).setOnClickListener { presenter.onCancelClicked() }
         findViewById<Button>(R.id.btnCancelBooking).setOnClickListener { presenter.onCancelClicked() }
-        findViewById<Button>(R.id.btnContinuePayment).setOnClickListener {
+        btnContinue.setOnClickListener {
             presenter.onContinueClicked(inputReason.text.toString())
         }
 
@@ -86,7 +79,7 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
                 text = "$day"
                 textSize = 14f
                 setTextColor(Color.parseColor("#334155"))
-                gravity = android.view.Gravity.CENTER
+                gravity = Gravity.CENTER
                 layoutParams = GridLayout.LayoutParams().apply {
                     width = cellSize; height = cellSize
                 }
@@ -109,52 +102,87 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
         }
     }
 
-    override fun showTimeSlots(slots: List<String>) {
+    override fun showTimeSlots(slots: List<SlotInfo>) {
         timeSlotsContainer.removeAllViews()
 
-        // Create rows of 3 slots each
-        var currentRow: LinearLayout? = null
-        slots.forEachIndexed { index, slot ->
-            if (index % 3 == 0) {
-                currentRow = LinearLayout(this).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply { bottomMargin = 8 }
-                }
-                timeSlotsContainer.addView(currentRow)
+        if (slots.isEmpty()) {
+            val emptyText = TextView(this).apply {
+                text = "Select a date to see available slots"
+                textSize = 13f
+                setTextColor(Color.parseColor("#94a3b8"))
+                gravity = Gravity.CENTER
+                val params = FlexboxLayout.LayoutParams(
+                    FlexboxLayout.LayoutParams.MATCH_PARENT,
+                    48.dpToPx()
+                )
+                layoutParams = params
             }
+            timeSlotsContainer.addView(emptyText)
+            return
+        }
 
+        slots.forEach { slotInfo ->
             val btn = Button(this).apply {
-                text = slot
+                text = slotInfo.time
                 textSize = 12f
                 isAllCaps = false
-                setBackgroundResource(R.drawable.bg_slot_unselected)
-                setTextColor(Color.parseColor("#334155"))
-                layoutParams = LinearLayout.LayoutParams(0, 44.dpToPx(), 1f).apply {
-                    marginEnd = if ((index % 3) < 2) 8.dpToPx() else 0
+                setTextColor(Color.parseColor("#334155")) // Ensure text is visible
+                
+                val params = FlexboxLayout.LayoutParams(
+                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                    44.dpToPx()
+                ).apply {
+                    marginEnd = 8.dpToPx()
+                    bottomMargin = 8.dpToPx()
                 }
-                setPadding(8.dpToPx(), 0, 8.dpToPx(), 0)
-                setOnClickListener { presenter.onSlotSelected(slot) }
-                tag = slot
+                layoutParams = params
+                setPadding(16.dpToPx(), 0, 16.dpToPx(), 0)
+                minWidth = 0
+                minHeight = 0
+                
+                when (slotInfo.status) {
+                    "available" -> {
+                        setBackgroundResource(R.drawable.bg_slot_unselected)
+                        isEnabled = true
+                        setOnClickListener { presenter.onSlotSelected(slotInfo.time) }
+                    }
+                    "booked" -> {
+                        setBackgroundResource(R.drawable.bg_slot_unselected)
+                        setTextColor(Color.parseColor("#cbd5e1"))
+                        isEnabled = false
+                        alpha = 0.6f
+                        text = "${slotInfo.time} ● Booked"
+                    }
+                    "blocked" -> {
+                        setBackgroundResource(R.drawable.bg_slot_unselected)
+                        setTextColor(Color.parseColor("#f59e0b"))
+                        isEnabled = false
+                        alpha = 0.7f
+                        text = "${slotInfo.time} ● Unavailable"
+                    }
+                    "past" -> {
+                        setBackgroundResource(R.drawable.bg_slot_unselected)
+                        setTextColor(Color.parseColor("#cbd5e1"))
+                        isEnabled = false
+                        alpha = 0.4f
+                        text = "${slotInfo.time} ● Past"
+                    }
+                }
+                tag = slotInfo.time
             }
-            currentRow?.addView(btn)
+            timeSlotsContainer.addView(btn)
         }
     }
 
     override fun highlightSelectedSlot(slot: String) {
         for (i in 0 until timeSlotsContainer.childCount) {
-            val row = timeSlotsContainer.getChildAt(i) as? LinearLayout ?: continue
-            for (j in 0 until row.childCount) {
-                val btn = row.getChildAt(j) as? Button ?: continue
-                if (btn.tag == slot) {
-                    btn.setBackgroundResource(R.drawable.bg_slot_selected)
-                    btn.setTextColor(Color.WHITE)
-                } else {
-                    btn.setBackgroundResource(R.drawable.bg_slot_unselected)
-                    btn.setTextColor(Color.parseColor("#334155"))
-                }
+            val btn = timeSlotsContainer.getChildAt(i) as? Button ?: continue
+            if (btn.tag == slot) {
+                btn.setBackgroundResource(R.drawable.bg_slot_selected)
+                btn.setTextColor(Color.WHITE)
+            } else if (btn.isEnabled) {
+                btn.setBackgroundResource(R.drawable.bg_slot_unselected)
+                btn.setTextColor(Color.parseColor("#334155"))
             }
         }
     }
@@ -176,6 +204,20 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
 
     override fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        progressBar.visibility = View.GONE
+    }
+
+    override fun showBookingProgress(show: Boolean) {
+        btnContinue.isEnabled = !show
+        btnContinue.text = if (show) "Booking…" else "Confirm Booking"
+        progressBar.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     override fun onDestroy() {

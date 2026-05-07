@@ -7,6 +7,7 @@ interface RegisterContract {
         fun showError(message: String)
         fun showMessage(message: String)
         fun setRole(role: String)
+        fun showSpecializations(specs: List<String>)
         fun clearFormAndFinish()
     }
 
@@ -15,7 +16,7 @@ interface RegisterContract {
         fun onRegisterClicked(
             fullName: String, email: String, phone: String, address: String,
             gender: String, birthDate: String, specialization: String,
-            licenseNumber: String, clinicAddress: String,
+            licenseNumber: String, clinicAddress: String, consultationFee: String,
             password: String, confirmPassword: String, termsAccepted: Boolean
         )
         fun onDestroy()

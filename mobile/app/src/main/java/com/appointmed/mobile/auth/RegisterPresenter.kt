@@ -23,10 +23,23 @@ class RegisterPresenter(
         view?.setRole(role)
     }
 
+    private fun loadSpecializations() {
+        ApiClient.create(context).getSpecializations().enqueue(object : Callback<List<String>> {
+            override fun onResponse(call: Call<List<String>>, response: Response<List<String>>) {
+                if (response.isSuccessful) {
+                    view?.showSpecializations(response.body() ?: emptyList())
+                }
+            }
+            override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                // Fail silently, use static list from arrays.xml
+            }
+        })
+    }
+
     override fun onRegisterClicked(
         fullName: String, email: String, phone: String, address: String,
         gender: String, birthDate: String, specialization: String,
-        licenseNumber: String, clinicAddress: String,
+        licenseNumber: String, clinicAddress: String, consultationFee: String,
         password: String, confirmPassword: String, termsAccepted: Boolean
     ) {
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -39,8 +52,8 @@ class RegisterPresenter(
             return
         }
 
-        if (selectedRole == "DOCTOR" && (specialization.isEmpty() || licenseNumber.isEmpty() || clinicAddress.isEmpty())) {
-            view?.showError("Doctor registration requires specialization, license number, and clinic address.")
+        if (selectedRole == "DOCTOR" && (specialization.isEmpty() || licenseNumber.isEmpty() || clinicAddress.isEmpty() || consultationFee.isEmpty())) {
+            view?.showError("Doctor registration requires specialization, license, clinic address, and fee.")
             return
         }
 
@@ -72,7 +85,8 @@ class RegisterPresenter(
             specialization = specialization.ifEmpty { null },
             licenseNumber = licenseNumber.ifEmpty { null },
             phone = phone.ifEmpty { null },
-            clinicAddress = clinicAddress.ifEmpty { null }
+            clinicAddress = clinicAddress.ifEmpty { null },
+            consultationFee = consultationFee.toIntOrNull()
         )
 
         ApiClient.create(context).register(request).enqueue(object : Callback<User> {

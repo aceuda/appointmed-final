@@ -2,6 +2,7 @@ package com.appointmed.mobile.auth
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -25,9 +26,10 @@ class RegisterActivity : AppCompatActivity(), RegisterContract.View {
     private lateinit var inputAddress: EditText
     private lateinit var spinnerGender: Spinner
     private lateinit var inputBirthDate: EditText
-    private lateinit var inputSpecialization: EditText
+    private lateinit var spinnerSpecialization: Spinner
     private lateinit var inputLicenseNumber: EditText
     private lateinit var inputClinicAddress: EditText
+    private lateinit var inputConsultationFee: EditText
     private lateinit var inputPasswordRegister: EditText
     private lateinit var inputConfirmPassword: EditText
     private lateinit var checkboxTerms: CheckBox
@@ -56,9 +58,10 @@ class RegisterActivity : AppCompatActivity(), RegisterContract.View {
         inputAddress = findViewById(R.id.inputAddress)
         spinnerGender = findViewById<Spinner>(R.id.spinnerGender)
         inputBirthDate = findViewById(R.id.inputBirthDate)
-        inputSpecialization = findViewById(R.id.inputSpecialization)
+        spinnerSpecialization = findViewById(R.id.spinnerSpecialization)
         inputLicenseNumber = findViewById(R.id.inputLicenseNumber)
         inputClinicAddress = findViewById(R.id.inputClinicAddress)
+        inputConsultationFee = findViewById(R.id.inputConsultationFee)
         inputPasswordRegister = findViewById(R.id.inputPasswordRegister)
         inputConfirmPassword = findViewById(R.id.inputConfirmPassword)
         checkboxTerms = findViewById(R.id.checkboxTerms)
@@ -78,9 +81,10 @@ class RegisterActivity : AppCompatActivity(), RegisterContract.View {
                 address = inputAddress.text.toString().trim(),
                 gender = spinnerGender.selectedItem?.toString()?.takeIf { it != "Select" } ?: "",
                 birthDate = inputBirthDate.text.toString().trim(),
-                specialization = inputSpecialization.text.toString().trim(),
+                specialization = spinnerSpecialization.selectedItem?.toString()?.takeIf { it != "Select Specialization" } ?: "",
                 licenseNumber = inputLicenseNumber.text.toString().trim(),
                 clinicAddress = inputClinicAddress.text.toString().trim(),
+                consultationFee = inputConsultationFee.text.toString().trim(),
                 password = inputPasswordRegister.text.toString().trim(),
                 confirmPassword = inputConfirmPassword.text.toString().trim(),
                 termsAccepted = checkboxTerms.isChecked
@@ -112,6 +116,17 @@ class RegisterActivity : AppCompatActivity(), RegisterContract.View {
 
         patientFieldsContainer.visibility = if (role == "PATIENT") View.VISIBLE else View.GONE
         doctorFieldsContainer.visibility = if (role == "DOCTOR") View.VISIBLE else View.GONE
+    }
+
+    override fun showSpecializations(specs: List<String>) {
+        if (specs.isEmpty()) return
+        
+        val allSpecs = mutableListOf("Select Specialization")
+        allSpecs.addAll(specs)
+        
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, allSpecs)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerSpecialization.adapter = adapter
     }
 
     override fun showLoading() {

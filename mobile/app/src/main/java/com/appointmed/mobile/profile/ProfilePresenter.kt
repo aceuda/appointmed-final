@@ -27,7 +27,8 @@ class ProfilePresenter(
             prefs.getPatientPhone(),
             prefs.getPatientAddress(),
             prefs.getPatientBirthDate(),
-            prefs.getPatientBloodType()
+            prefs.getPatientBloodType(),
+            user.consultationFee
         )
 
         if (user.avatarData?.isNotEmpty() == true) {
@@ -37,15 +38,25 @@ class ProfilePresenter(
         }
     }
 
-    override fun saveProfile(name: String, email: String, phone: String, address: String, birthDate: String, bloodType: String, avatarData: String?) {
+    override fun saveProfile(name: String, email: String, phone: String, address: String, birthDate: String, bloodType: String, consultationFee: String, avatarData: String?) {
         if (name.isEmpty() || email.isEmpty()) {
             view?.showToast("Name and email are required.")
             return
         }
 
-        if (phone.isEmpty() || address.isEmpty() || birthDate.isEmpty() || bloodType.isEmpty()) {
-            view?.showToast("Please fill in all personal details.")
-            return
+        val prefs = Prefs(context)
+        val user = prefs.getUser()
+
+        if (user.role == "PATIENT") {
+            if (phone.isEmpty() || address.isEmpty() || birthDate.isEmpty() || bloodType.isEmpty()) {
+                view?.showToast("Please fill in all personal details.")
+                return
+            }
+        } else if (user.role == "DOCTOR") {
+            if (consultationFee.isEmpty()) {
+                view?.showToast("Consultation fee is required.")
+                return
+            }
         }
 
         if (!NetworkUtils.isOnline(context)) {
@@ -55,13 +66,15 @@ class ProfilePresenter(
 
         view?.showProfileLoading(true)
 
-        val prefs = Prefs(context)
-        val user = prefs.getUser()
+        val newAvatarData = if (avatarData.isNullOrEmpty()) user.avatarData else avatarData
+        val cleanedAvatar = if (newAvatarData.isNullOrEmpty()) null else newAvatarData
+
         val requestUser = user.copy(
             name = name,
             email = email,
-            avatarData = avatarData ?: user.avatarData,
-            avatarUrl = null
+            avatarData = cleanedAvatar,
+            avatarUrl = null,
+            consultationFee = consultationFee.toDoubleOrNull() ?: user.consultationFee
         )
 
         ApiClient.create(context).updateUser(user.id, requestUser).enqueue(object : Callback<User> {
@@ -69,7 +82,13 @@ class ProfilePresenter(
                 view?.showProfileLoading(false)
                 if (response.isSuccessful && response.body() != null) {
                     val updatedUser = response.body()!!
-                    Prefs(context).saveUser(updatedUser)
+                    // Preserve fee if it comes back as 0 from server but we know it should be something else
+                    val finalUser = if (updatedUser.role == "DOCTOR" && updatedUser.consultationFee == 0.0) {
+                        updatedUser.copy(consultationFee = requestUser.consultationFee)
+                    } else {
+                        updatedUser
+                    }
+                    Prefs(context).saveUser(finalUser)
                     Prefs(context).savePatientDetails(phone, address, birthDate, bloodType)
                     view?.showProfileUpdateSuccess()
                     loadProfile()
@@ -140,6 +159,18 @@ class ProfilePresenter(
         Prefs(context).clear()
         view?.showToast("Logged out successfully.")
         view?.navigateToLogin()
+    }
+
+    override fun onHomeClicked() {
+        view?.navigateToHome()
+    }
+
+    override fun onScheduleClicked() {
+        view?.navigateToAppointments()
+    }
+
+    override fun onRecordsClicked() {
+        view?.navigateToRecords()
     }
 
     override fun onDestroy() {

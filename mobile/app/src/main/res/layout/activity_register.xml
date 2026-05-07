@@ -450,18 +450,13 @@
                     android:layout_marginEnd="12dp"
                     android:contentDescription="Specialization icon" />
 
-                <EditText
-                    android:id="@+id/inputSpecialization"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <Spinner
+                    android:id="@+id/spinnerSpecialization"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="e.g. Cardiology"
-                    android:textColorHint="#CBD5E1"
-                    android:inputType="text"
+                    android:entries="@array/specialization_options"
                     android:background="@android:color/transparent"
-                    android:textSize="14sp"
-                    android:textColor="@color/textPrimary"
-                    android:minHeight="24dp" />
+                    android:spinnerMode="dropdown" />
             </LinearLayout>
 
             <!-- License Number Label -->
@@ -538,6 +533,46 @@
                     android:hint="Clinic location"
                     android:textColorHint="#CBD5E1"
                     android:inputType="textPostalAddress"
+                    android:background="@android:color/transparent"
+                    android:textSize="14sp"
+                    android:textColor="@color/textPrimary"
+                    android:minHeight="24dp" />
+            </LinearLayout>
+
+            <!-- Consultation Fee Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Consultation Fee (₱)"
+                android:textColor="@color/textPrimary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_auth"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    android:tint="#94A3B8"
+                    android:layout_marginEnd="12dp"
+                    android:contentDescription="Fee icon" />
+
+                <EditText
+                    android:id="@+id/inputConsultationFee"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="1200"
+                    android:textColorHint="#CBD5E1"
+                    android:inputType="number"
                     android:background="@android:color/transparent"
                     android:textSize="14sp"
                     android:textColor="@color/textPrimary"
