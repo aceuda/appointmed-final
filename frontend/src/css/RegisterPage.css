@@ -31,6 +31,12 @@
 
 .register-logo span { color: var(--accent-blue); }
 
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .nav-link {
     background: none;
     border: none;
@@ -168,3 +174,29 @@
 }
 .register-alert.error { background: #fee2e2; color: #b91c1c; }
 .register-alert.success { background: #dcfce7; color: #15803d; }
+
+/* ===== Mobile Responsiveness ===== */
+@media (max-width: 768px) {
+    .register-navbar { padding: 1rem 1.5rem; }
+    .register-logo { font-size: 1.4rem; }
+    .navbar-links { display: none; }
+    .register-main-content { padding-top: 1rem; padding-left: 1rem; padding-right: 1rem; }
+    .register-card {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+        border-radius: 10px;
+    }
+    .register-card-header h1 { font-size: 1.4rem; }
+    .input-grid { grid-template-columns: 1fr; gap: 0; }
+    .input-control { font-size: 0.85rem; padding: 0.6rem 0.7rem; }
+    .role-toggle-btn { padding: 0.55rem 0.4rem; font-size: 0.8rem; }
+    .submit-btn { padding: 0.8rem; font-size: 0.9rem; }
+    .terms-container { font-size: 0.7rem; }
+}
+
+@media (max-width: 480px) {
+    .register-navbar { padding: 0.75rem 1rem; }
+    .register-main-content { padding-top: 0.75rem; }
+    .register-card { padding: 1.25rem; margin: 0; }
+    .register-card-header h1 { font-size: 1.2rem; }
+}

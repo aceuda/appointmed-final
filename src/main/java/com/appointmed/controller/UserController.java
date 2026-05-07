@@ -1,29 +1,34 @@
 package com.appointmed.controller;
 
+import com.appointmed.dto.AuthResponse;
 import com.appointmed.model.User;
 import com.appointmed.dto.LoginRequest;
 import com.appointmed.dto.RegisterRequest;
 import com.appointmed.service.UserService;
+import com.appointmed.service.AppointmentService;
+import com.appointmed.service.RecordService;
+import com.appointmed.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    @Autowired private UserService userService;
+    @Autowired private JwtUtil jwtUtil;
+    @Autowired private AppointmentService appointmentService;
+    @Autowired private RecordService recordService;
 
-    // GET all users
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    // GET user by ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
@@ -31,37 +36,48 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST create user (generic)
     @PostMapping
     public User createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
-    // POST register new user with role
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
         User u = userService.register(req);
-        return ResponseEntity.ok(u);
+        String token = jwtUtil.generateToken(u.getEmail(), u.getRole(), u.getId());
+        return ResponseEntity.ok(AuthResponse.from(u, token));
     }
 
-    // POST login
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req) {
         return userService.login(req)
-                .map(ResponseEntity::ok)
+                .map(user -> {
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
+                    return ResponseEntity.ok(AuthResponse.from(user, token));
+                })
                 .orElse(ResponseEntity.status(401).build());
     }
 
-    // PUT update user
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         return ResponseEntity.ok(userService.updateUser(id, userDetails));
     }
 
-    // DELETE user
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<Map<String, Object>> getUserStats(@PathVariable Long id) {
+        long unpaid = appointmentService.countUnpaidByPatientId(id);
+        long records = recordService.countPatientRecords(id);
+        long prescriptions = recordService.countActivePrescriptions(id);
+        return ResponseEntity.ok(Map.of(
+                "unpaidInvoices", unpaid,
+                "medicalRecords", records,
+                "activePrescriptions", prescriptions
+        ));
     }
 }

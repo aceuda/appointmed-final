@@ -149,6 +149,7 @@
                         android:letterSpacing="0.08" />
 
                     <TextView
+                        android:id="@+id/textAppointmentId"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="ID: #AM-9283"
@@ -250,6 +251,7 @@
 
                 <!-- Quick Book -->
                 <LinearLayout
+                    android:id="@+id/quickBook"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
@@ -257,7 +259,9 @@
                     android:orientation="vertical"
                     android:padding="16dp"
                     android:gravity="center"
-                    android:layout_marginEnd="8dp">
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <FrameLayout
                         android:layout_width="44dp"
@@ -285,6 +289,7 @@
 
                 <!-- Health Records -->
                 <LinearLayout
+                    android:id="@+id/healthRecords"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
@@ -292,7 +297,9 @@
                     android:orientation="vertical"
                     android:padding="16dp"
                     android:gravity="center"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <FrameLayout
                         android:layout_width="44dp"
@@ -329,6 +336,7 @@
                 android:layout_marginBottom="12dp">
 
                 <TextView
+                    android:id="@+id/textAvailableDoctorsHeader"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
@@ -338,304 +346,34 @@
                     android:textColor="@color/textPrimary" />
 
                 <TextView
+                    android:id="@+id/seeAllDoctors"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="See All"
                     android:textColor="#3B82F6"
                     android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
             </LinearLayout>
 
-            <!-- Doctor 1: Michael Chen -->
-            <LinearLayout
+            <!-- Loading Spinner for Doctors -->
+            <ProgressBar
+                android:id="@+id/progressBarDoctors"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Dynamic Doctor List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerAvailableDoctors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_doctor_card"
-                android:orientation="horizontal"
-                android:padding="14dp"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="10dp" />
 
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="12dp">
-
-                    <View
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_doctor_avatar" />
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:tint="#94A3B8"
-                        android:contentDescription="Doctor avatar" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dr. Michael Chen"
-                        android:textStyle="bold"
-                        android:textColor="@color/textPrimary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Cardiologist • 12 yrs exp."
-                        android:textColor="@color/textSecondary"
-                        android:textSize="12sp"
-                        android:layout_marginTop="2dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="4dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="★"
-                            android:textColor="#16A34A"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" 4.9"
-                            android:textColor="#16A34A"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" (120 reviews)"
-                            android:textColor="@color/textSecondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <FrameLayout
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/bg_plus_circle">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="+"
-                        android:textSize="18sp"
-                        android:textColor="@color/textSecondary" />
-                </FrameLayout>
-            </LinearLayout>
-
-            <!-- Doctor 2: Elena Rodriguez -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_doctor_card"
-                android:orientation="horizontal"
-                android:padding="14dp"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
-
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="12dp">
-
-                    <View
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_doctor_avatar" />
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:tint="#94A3B8"
-                        android:contentDescription="Doctor avatar" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dr. Elena Rodriguez"
-                        android:textStyle="bold"
-                        android:textColor="@color/textPrimary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dermatologist • 8 yrs exp."
-                        android:textColor="@color/textSecondary"
-                        android:textSize="12sp"
-                        android:layout_marginTop="2dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="4dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="★"
-                            android:textColor="#16A34A"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" 4.8"
-                            android:textColor="#16A34A"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" (85 reviews)"
-                            android:textColor="@color/textSecondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <FrameLayout
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/bg_plus_circle">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="+"
-                        android:textSize="18sp"
-                        android:textColor="@color/textSecondary" />
-                </FrameLayout>
-            </LinearLayout>
-
-            <!-- Doctor 3: James Wilson -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_doctor_card"
-                android:orientation="horizontal"
-                android:padding="14dp"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
-
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="12dp">
-
-                    <View
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_doctor_avatar" />
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:tint="#94A3B8"
-                        android:contentDescription="Doctor avatar" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dr. James Wilson"
-                        android:textStyle="bold"
-                        android:textColor="@color/textPrimary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Neurologist • 15 yrs exp."
-                        android:textColor="@color/textSecondary"
-                        android:textSize="12sp"
-                        android:layout_marginTop="2dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="4dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="★"
-                            android:textColor="#16A34A"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" 5.0"
-                            android:textColor="#16A34A"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" (210 reviews)"
-                            android:textColor="@color/textSecondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <FrameLayout
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/bg_plus_circle">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="+"
-                        android:textSize="18sp"
-                        android:textColor="@color/textSecondary" />
-                </FrameLayout>
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
@@ -654,12 +392,15 @@
 
         <!-- Home (active) -->
         <LinearLayout
+            android:id="@+id/navHome"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
@@ -679,12 +420,15 @@
 
         <!-- Schedule -->
         <LinearLayout
+            android:id="@+id/navSchedule"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
@@ -695,7 +439,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Schedule"
+                android:text="Appointments"
                 android:textSize="11sp"
                 android:textColor="@color/textSecondary"
                 android:layout_marginTop="2dp" />
@@ -703,12 +447,15 @@
 
         <!-- Doctors (center FAB) -->
         <LinearLayout
+            android:id="@+id/navDoctorsFAB"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="4dp">
+            android:paddingVertical="4dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <FrameLayout
                 android:layout_width="44dp"

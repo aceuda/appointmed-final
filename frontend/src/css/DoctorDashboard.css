@@ -353,42 +353,282 @@
 .slots-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin: 1.5rem 0;
+    gap: 10px;
+    margin: 1rem 0;
 }
 
 .slot-btn {
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
     background: white;
-    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
 }
 
 .slot-btn.slot-available {
     border-color: #3b82f6;
     color: #3b82f6;
+    background: #eff6ff;
 }
 
-.slot-btn.slot-blocked {
-    background: #f8fafc;
-    color: #94a3b8;
-}
-
-.slot-btn.slot-lunch {
-    background: #f1f5f9;
-    cursor: not-allowed;
-    opacity: 0.6;
+.slot-btn.slot-booked-real {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
 }
 
 .slot-time {
     font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .slot-status-text {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.slot-status-text.available-text {
+    color: #2563eb;
+}
+
+.slot-status-text.booked-text {
+    color: #ef4444;
+}
+
+.slot-booked-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.slot-patient-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.slot-appt-status {
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #64748b;
+}
+
+.slot-appt-status.confirmed {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.slot-appt-status.pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* Schedule Legend */
+.doc-slot-legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+
+.doc-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.doc-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+}
+
+.doc-legend-dot.doc-legend-available {
+    background: #eff6ff;
+    border: 1.5px solid #3b82f6;
+}
+
+.doc-legend-dot.doc-legend-booked {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+}
+
+.doc-legend-dot.doc-legend-blocked {
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
+}
+
+.doc-legend-dot.doc-legend-past {
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+}
+
+/* Toggle hint */
+.toggle-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+.toggle-hint .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* Past time slots */
+.slot-btn.slot-past {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #cbd5e1;
+    opacity: 0.7;
+}
+
+.slot-btn.slot-past .slot-time {
+    text-decoration: line-through;
+    color: #cbd5e1;
+}
+
+.slot-status-text.past-text {
+    color: #94a3b8;
+}
+
+/* Blocked slots */
+.slot-btn.slot-blocked {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.slot-btn.slot-blocked .slot-time {
+    color: #c2410c;
+}
+
+.slot-status-text.blocked-text {
+    color: #ea580c;
+}
+
+/* Clickable slots */
+.slot-btn.slot-clickable {
+    cursor: pointer;
+}
+
+.slot-btn.slot-clickable:hover {
+    transform: scale(1.03);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slot-btn.slot-available.slot-clickable:hover {
+    border-color: #f97316;
+    background: #fff7ed;
+}
+
+.slot-btn.slot-blocked.slot-clickable:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+/* ===== Mobile Responsiveness ===== */
+@media (max-width: 768px) {
+    /* Header → compact */
+    .search-header {
+        padding: 0 1rem;
+        height: 56px;
+    }
+    .search-bar-container { display: none; }
+    .user-profile-header .profile-text { display: none; }
+    .header-actions { gap: 0.75rem; }
+    .logo-section { font-size: 1.1rem; }
+
+    /* Sidebar → hidden */
+    .doctor-sidebar { display: none; }
+
+    /* Layout → no offset */
+    .dashboard-layout { margin-top: 56px; }
+    .doctor-main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    /* Content header → stack */
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .page-title { font-size: 1.3rem; }
+    .page-subtitle { font-size: 0.8rem; }
+    .action-buttons { width: 100%; }
+    .action-buttons .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Stats grid → single column */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .stat-card { padding: 1rem; }
+    .stat-value { font-size: 1.1rem; }
+
+    /* Dashboard grid → single column */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Appointment list items */
+    .appointment-item {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+    }
+    .appointment-info h4 { font-size: 0.9rem; }
+    .appointment-info p { font-size: 0.75rem; }
+
+    /* Slot grid → remains 2 columns but tighter */
+    .slots-grid { gap: 8px; }
+    .slot-btn { padding: 10px 8px; }
+    .slot-time { font-size: 0.8rem; }
+
+    /* Legend → wrap */
+    .doc-slot-legend { flex-wrap: wrap; gap: 10px; }
+
+    /* Toggle hint */
+    .toggle-hint { font-size: 0.65rem; }
+}
+
+@media (max-width: 480px) {
+    .doctor-main-content { padding: 0.75rem; }
+    .stat-card { border-radius: 10px; }
+    .stat-label { font-size: 0.6rem; }
+    .overview-section,
+    .availability-section { padding: 0; }
+    .section-title { font-size: 0.95rem; }
+    .appointment-item { padding: 10px; }
+    .slots-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .slot-btn { padding: 8px 6px; }
+    .slot-time { font-size: 0.75rem; }
+    .slot-status-text { font-size: 0.55rem; }
+    .slot-patient-name { font-size: 0.6rem; max-width: 80px; }
 }

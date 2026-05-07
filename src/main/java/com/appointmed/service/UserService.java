@@ -44,10 +44,17 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         user.setName(userDetails.getName());
         user.setEmail(userDetails.getEmail());
-        user.setPassword(userDetails.getPassword());
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
+            user.setPassword(userDetails.getPassword());
+        }
         user.setRole(userDetails.getRole());
         user.setAvatarUrl(userDetails.getAvatarUrl());
         user.setAvatarData(userDetails.getAvatarData());
+        if (userDetails.getPhone() != null) user.setPhone(userDetails.getPhone());
+        if (userDetails.getAddress() != null) user.setAddress(userDetails.getAddress());
+        if (userDetails.getGender() != null) user.setGender(userDetails.getGender());
+        if (userDetails.getBirthDate() != null) user.setBirthDate(userDetails.getBirthDate());
+        if (userDetails.getBloodType() != null) user.setBloodType(userDetails.getBloodType());
         return userRepository.save(user);
     }
 
@@ -71,6 +78,9 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(role);
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getBirthDate() != null) user.setBirthDate(request.getBirthDate());
 
         User savedUser = userRepository.save(user);
 
@@ -81,15 +91,13 @@ public class UserService {
             doctor.setPhone(request.getPhone());
             doctor.setClinicAddress(request.getClinicAddress());
             doctor.setUser(savedUser);
-
             doctorRepository.save(doctor);
         } else if (role.equals("PATIENT")) {
             Patient patient = new Patient();
+            patient.setUser(savedUser);
             patient.setFirstName(request.getFullName());
             patient.setGender(request.getGender());
             patientRepository.save(patient);
-        } else if (role.equals("ADMIN")) {
-            // no extra entity for admin, just user record
         }
 
         return savedUser;
@@ -98,7 +106,25 @@ public class UserService {
     public Optional<User> login(LoginRequest request) {
         String role = request.getRole().toUpperCase(Locale.ROOT);
 
-        return userRepository.findByEmailAndRole(request.getEmail(), role)
-                .filter(user -> user.getPassword().equals(request.getPassword()));
+        Optional<User> userOpt = userRepository.findByEmailAndRole(request.getEmail(), role);
+
+        if (userOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        User user = userOpt.get();
+        String storedPassword = user.getPassword();
+        String inputPassword = request.getPassword();
+
+        if (storedPassword == null || inputPassword == null) {
+            return Optional.empty();
+        }
+
+        // Direct plain-text password comparison
+        if (storedPassword.equals(inputPassword)) {
+            return Optional.of(user);
+        }
+
+        return Optional.empty();
     }
 }

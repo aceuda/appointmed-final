@@ -266,8 +266,57 @@
                         android:minHeight="24dp" />
                 </LinearLayout>
 
+                <!-- Consultation Fee (Doctor Only) -->
+                <LinearLayout
+                    android:id="@+id/layoutProfileFee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Consultation Fee (₱)"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="18dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_input_field"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_menu_agenda"
+                            android:tint="@color/textSecondary"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Fee icon" />
+
+                        <EditText
+                            android:id="@+id/inputProfileFee"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="1200"
+                            android:textColorHint="#94A3B8"
+                            android:inputType="number"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            android:textColor="@color/textPrimary"
+                            android:minHeight="24dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
                 <!-- Date of Birth and Blood Type row -->
                 <LinearLayout
+                    android:id="@+id/layoutProfileDOBAndBlood"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -366,13 +415,226 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Change Password Dropdown Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp"
+                android:paddingHorizontal="20dp">
+
+                <!-- Dropdown Header -->
+                <LinearLayout
+                    android:id="@+id/layoutPasswordHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="SECURITY"
+                        android:textAllCaps="true"
+                        android:textColor="@color/textSecondary"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.1"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/imagePasswordArrow"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/arrow_down_float"
+                        android:tint="@color/textSecondary"
+                        android:contentDescription="Expand password section" />
+                </LinearLayout>
+
+                <!-- Collapsible Content -->
+                <LinearLayout
+                    android:id="@+id/layoutPasswordContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:paddingTop="8dp">
+
+                    <!-- Password Error -->
+                    <TextView
+                        android:id="@+id/textPasswordError"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/error"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- Password Success -->
+                    <TextView
+                        android:id="@+id/textPasswordSuccess"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/success"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- Current Password -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Current Password"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_input_field"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_lock_idle_lock"
+                            android:tint="#94A3B8"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Lock icon" />
+
+                        <EditText
+                            android:id="@+id/inputCurrentPassword"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Enter current password"
+                            android:textColorHint="#94A3B8"
+                            android:inputType="textPassword"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            android:textColor="@color/textPrimary"
+                            android:minHeight="24dp" />
+                    </LinearLayout>
+
+                    <!-- New Password -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="New Password"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_input_field"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_lock_idle_lock"
+                            android:tint="#94A3B8"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Lock icon" />
+
+                        <EditText
+                            android:id="@+id/inputNewPassword"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Enter new password"
+                            android:textColorHint="#94A3B8"
+                            android:inputType="textPassword"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            android:textColor="@color/textPrimary"
+                            android:minHeight="24dp" />
+                    </LinearLayout>
+
+                    <!-- Confirm New Password -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Confirm New Password"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_input_field"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_lock_idle_lock"
+                            android:tint="#94A3B8"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Lock icon" />
+
+                        <EditText
+                            android:id="@+id/inputConfirmNewPassword"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Re-enter new password"
+                            android:textColorHint="#94A3B8"
+                            android:inputType="textPassword"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            android:textColor="@color/textPrimary"
+                            android:minHeight="24dp" />
+                    </LinearLayout>
+
+                    <!-- Update Password Button -->
+                    <Button
+                        android:id="@+id/buttonUpdatePassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/bg_save_button"
+                        android:text="🔒  Update Password"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:stateListAnimator="@null" />
+
+                    <!-- Password Progress -->
+                    <ProgressBar
+                        android:id="@+id/progressBarPassword"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+
             <!-- Buttons Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
-                android:layout_marginTop="32dp">
+                android:layout_marginTop="24dp">
 
                 <!-- Save Changes Button -->
                 <Button
@@ -415,197 +677,6 @@
                     android:stateListAnimator="@null" />
             </LinearLayout>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#F1F5F9"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="24dp" />
-
-            <!-- Change Password Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="20dp"
-                android:paddingTop="20dp">
-
-                <!-- Section label -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="CHANGE PASSWORD"
-                    android:textAllCaps="true"
-                    android:textColor="@color/textSecondary"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.1"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Password Error -->
-                <TextView
-                    android:id="@+id/textPasswordError"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/error"
-                    android:textSize="13sp"
-                    android:visibility="gone"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Password Success -->
-                <TextView
-                    android:id="@+id/textPasswordSuccess"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/success"
-                    android:textSize="13sp"
-                    android:visibility="gone"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Current Password -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Current Password"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input_field"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_lock_idle_lock"
-                        android:tint="#94A3B8"
-                        android:layout_marginEnd="12dp"
-                        android:contentDescription="Lock icon" />
-
-                    <EditText
-                        android:id="@+id/inputCurrentPassword"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:hint="Enter current password"
-                        android:textColorHint="#94A3B8"
-                        android:inputType="textPassword"
-                        android:background="@android:color/transparent"
-                        android:textSize="14sp"
-                        android:textColor="@color/textPrimary"
-                        android:minHeight="24dp" />
-                </LinearLayout>
-
-                <!-- New Password -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="New Password"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input_field"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_lock_idle_lock"
-                        android:tint="#94A3B8"
-                        android:layout_marginEnd="12dp"
-                        android:contentDescription="Lock icon" />
-
-                    <EditText
-                        android:id="@+id/inputNewPassword"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:hint="Enter new password"
-                        android:textColorHint="#94A3B8"
-                        android:inputType="textPassword"
-                        android:background="@android:color/transparent"
-                        android:textSize="14sp"
-                        android:textColor="@color/textPrimary"
-                        android:minHeight="24dp" />
-                </LinearLayout>
-
-                <!-- Confirm New Password -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Confirm New Password"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input_field"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_lock_idle_lock"
-                        android:tint="#94A3B8"
-                        android:layout_marginEnd="12dp"
-                        android:contentDescription="Lock icon" />
-
-                    <EditText
-                        android:id="@+id/inputConfirmNewPassword"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:hint="Re-enter new password"
-                        android:textColorHint="#94A3B8"
-                        android:inputType="textPassword"
-                        android:background="@android:color/transparent"
-                        android:textSize="14sp"
-                        android:textColor="@color/textPrimary"
-                        android:minHeight="24dp" />
-                </LinearLayout>
-
-                <!-- Update Password Button -->
-                <Button
-                    android:id="@+id/buttonUpdatePassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/bg_save_button"
-                    android:text="🔒  Update Password"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:stateListAnimator="@null" />
-
-                <!-- Password Progress -->
-                <ProgressBar
-                    android:id="@+id/progressBarPassword"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone" />
-            </LinearLayout>
-
         </LinearLayout>
     </ScrollView>
 
@@ -623,12 +694,15 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
+            android:id="@+id/navHome"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
@@ -646,12 +720,15 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/navSchedule"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
@@ -662,19 +739,22 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Visits"
+                android:text="Appointments"
                 android:textSize="11sp"
                 android:textColor="@color/textSecondary"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/navRecords"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
@@ -692,12 +772,15 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/navProfile"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="8dp">
+            android:paddingVertical="8dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="24dp"
