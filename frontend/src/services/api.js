@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-const API_BASE_URL = BASE_URL.endsWith('/api')
-    ? BASE_URL
-    : `${BASE_URL.replace(/\/+$/, '')}/api`;
+const DEFAULT_PROD_API_URL = 'https://appointmed-backend-sdjk.onrender.com/api';
+const base = process.env.REACT_APP_API_URL ||
+    (process.env.NODE_ENV === 'production' ? DEFAULT_PROD_API_URL : 'http://localhost:8080');
+const API_BASE_URL = base.endsWith('/api')
+    ? base
+    : `${base.replace(/\/+$/, '')}/api`;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
