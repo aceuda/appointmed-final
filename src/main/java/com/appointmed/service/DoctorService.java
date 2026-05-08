@@ -1,5 +1,6 @@
 package com.appointmed.service;
 
+import com.appointmed.dto.DoctorProfileUpdateRequest;
 import com.appointmed.dto.DoctorResponse;
 import com.appointmed.exception.ResourceNotFoundException;
 import com.appointmed.model.Appointment;
@@ -233,6 +234,18 @@ public class DoctorService {
         return entry;
     }
 
+    @Transactional
+    public DoctorResponse updateDoctorProfile(Long doctorId, DoctorProfileUpdateRequest req) {
+        Doctor doctor = getDoctorEntityById(doctorId);
+        if (req.getSpecialization() != null) doctor.setSpecialization(req.getSpecialization());
+        if (req.getLicenseNumber() != null) doctor.setLicenseNumber(req.getLicenseNumber());
+        if (req.getPhone() != null) doctor.setPhone(req.getPhone());
+        if (req.getClinicAddress() != null) doctor.setClinicAddress(req.getClinicAddress());
+        if (req.getConsultationFee() != null) doctor.setConsultationFee(req.getConsultationFee());
+        doctorRepo.save(doctor);
+        return toResponse(doctor);
+    }
+
     private DoctorResponse toResponse(Doctor doc) {
         return DoctorResponse.builder()
                 .id(doc.getId())
@@ -243,10 +256,11 @@ public class DoctorService {
                 .licenseNumber(doc.getLicenseNumber())
                 .phone(doc.getPhone())
                 .clinicAddress(doc.getClinicAddress())
-                .avatarUrl(doc.getUser().getAvatarUrl())
+                .avatarUrl(doc.getUser().getAvatarData() != null ? doc.getUser().getAvatarData() : doc.getUser().getAvatarUrl())
                 .available(true)
                 .rating(4.5 + (doc.getId() % 5) * 0.1)
                 .reviews(50 + (int)(doc.getId() * 17 % 200))
+                .consultationFee(doc.getConsultationFee())
                 .build();
     }
 }

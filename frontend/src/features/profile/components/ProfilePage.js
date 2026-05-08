@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast } from '../../../App';
+import { useAuth, useToast } from '../../../contexts';
 import {
-  User, Lock, Bell, HelpCircle, Camera,
-  Phone, MapPin, Calendar, Droplets, BellRing, LogOut, ArrowLeft, Save, X
+    User, Lock, Bell, HelpCircle, Camera,
+    Phone, MapPin, Calendar, Droplets, BellRing, LogOut, Save, X, DollarSign, Stethoscope, Building2
 } from 'lucide-react';
 import './ProfilePage.css';
-import { userAPI } from "../../../shared/services/api";
+import { userAPI, doctorAPI } from "../../../shared/services/api";
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -17,13 +17,17 @@ const ProfilePage = () => {
     // Profile form fields
     const [profileName, setProfileName] = useState('');
     const [profileEmail, setProfileEmail] = useState('');
-    const [profilePhone, setProfilePhone] = useState('+1 (555) 123-4567');
-    const [profileAddress, setProfileAddress] = useState('123 Medical Plaza, Apartment 4B, New York, NY 10001');
-    const [profileDob, setProfileDob] = useState('May 14, 1992');
-    const [profileBlood, setProfileBlood] = useState('O+');
+    const [profilePhone, setProfilePhone] = useState('');
+    const [profileAddress, setProfileAddress] = useState('');
+    const [profileDob, setProfileDob] = useState('');
+    const [profileBlood, setProfileBlood] = useState('');
     const [profileDirty, setProfileDirty] = useState(false);
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
+
+    // Avatar state
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [avatarData, setAvatarData] = useState(null);
 
     // Security form fields
     const [currentPassword, setCurrentPassword] = useState('');
@@ -32,6 +36,15 @@ const ProfilePage = () => {
     const [secSaving, setSecSaving] = useState(false);
     const [secMsg, setSecMsg] = useState({ type: '', text: '' });
 
+    // Doctor-specific settings
+    const [doctorProfile, setDoctorProfile] = useState(null);
+    const [consultationFee, setConsultationFee] = useState('');
+    const [clinicAddress, setClinicAddress] = useState('');
+    const [docSpecialization, setDocSpecialization] = useState('');
+    const [docPhone, setDocPhone] = useState('');
+    const [docSaving, setDocSaving] = useState(false);
+    const [docMsg, setDocMsg] = useState({ type: '', text: '' });
+
     // Notification settings
     const [notifEmail, setNotifEmail] = useState(true);
     const [notifSms, setNotifSms] = useState(false);
@@ -39,21 +52,79 @@ const ProfilePage = () => {
     const [notifPromo, setNotifPromo] = useState(false);
 
     const savedUser = authUser;
+    const isDoctor = savedUser?.role === 'DOCTOR';
 
     useEffect(() => {
-        if (savedUser) {
-            setProfileName(savedUser.name || '');
-            setProfileEmail(savedUser.email || '');
+        if (!savedUser) return;
+
+        // Fetch full user data from backend
+        const fetchUserData = async () => {
+            try {
+                const res = await userAPI.getById(savedUser.id);
+                const u = res.data;
+                setProfileName(u.name || '');
+                setProfileEmail(u.email || '');
+                setProfilePhone(u.phone || '');
+                setProfileAddress(u.address || '');
+                setProfileDob(u.birthDate || '');
+                setProfileBlood(u.bloodType || '');
+                if (u.avatarData) {
+                    setAvatarPreview(u.avatarData);
+                    setAvatarData(u.avatarData);
+                } else if (u.avatarUrl) {
+                    setAvatarPreview(u.avatarUrl);
+                }
+            } catch (err) {
+                // Fallback to auth context
+                setProfileName(savedUser.name || '');
+                setProfileEmail(savedUser.email || '');
+            }
+        };
+        fetchUserData();
+
+        // If doctor, fetch doctor profile
+        if (isDoctor) {
+            const fetchDoctorProfile = async () => {
+                try {
+                    const res = await doctorAPI.getByUserId(savedUser.id);
+                    setDoctorProfile(res.data);
+                    setConsultationFee(res.data.consultationFee || '');
+                    setClinicAddress(res.data.clinicAddress || '');
+                    setDocSpecialization(res.data.specialization || '');
+                    setDocPhone(res.data.phone || '');
+                } catch (err) {
+                    console.error('Failed to load doctor profile:', err);
+                }
+            };
+            fetchDoctorProfile();
         }
     }, []);
 
     // Track changes
     useEffect(() => {
         if (savedUser) {
-            const hasChanges = profileName !== (savedUser.name || '') || profileEmail !== (savedUser.email || '');
-            setProfileDirty(hasChanges);
+            setProfileDirty(true);
         }
-    }, [profileName, profileEmail, profilePhone, profileAddress, profileDob, profileBlood]);
+    }, [profileName, profileEmail, profilePhone, profileAddress, profileDob, profileBlood, avatarData]);
+
+    const handleAvatarUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Image must be under 2MB', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target.result;
+            setAvatarPreview(base64);
+            setAvatarData(base64);
+            setProfileDirty(true);
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleProfileSave = async () => {
         setProfileMsg({ type: '', text: '' });
@@ -63,9 +134,32 @@ const ProfilePage = () => {
         }
         setProfileSaving(true);
         try {
-            const updatedUser = { ...savedUser, name: profileName, email: profileEmail };
-            await userAPI.update(savedUser.id, updatedUser);
-            updateUser({ ...savedUser, name: profileName, email: profileEmail });
+            const safeAvatarUrl = savedUser?.avatarUrl && !savedUser.avatarUrl.startsWith('data:')
+                ? savedUser.avatarUrl
+                : undefined;
+
+            const payload = {
+                ...savedUser,
+                name: profileName,
+                email: profileEmail,
+                phone: profilePhone,
+                address: profileAddress,
+                birthDate: profileDob,
+                bloodType: profileBlood,
+                avatarUrl: safeAvatarUrl,
+            };
+            if (avatarData) {
+                payload.avatarData = avatarData;
+            }
+            await userAPI.update(savedUser.id, payload);
+            const updatedCtx = {
+                ...savedUser,
+                name: profileName,
+                email: profileEmail,
+                avatarUrl: safeAvatarUrl,
+                avatarData: avatarData || savedUser.avatarData,
+            };
+            updateUser(updatedCtx);
             showToast('Profile updated successfully!', 'success');
             setProfileDirty(false);
         } catch (err) {
@@ -96,20 +190,37 @@ const ProfilePage = () => {
             setSecMsg({ type: 'error', text: 'Passwords do not match.' });
             return;
         }
-        if (currentPassword !== savedUser?.password) {
-            // Password not available client-side anymore; attempt server-side update
-        }
         setSecSaving(true);
         try {
-            // Send password update to backend - backend handles validation
-            await userAPI.update(savedUser.id, { ...savedUser, password: newPassword });
-            updateUser({ ...savedUser });
+            await userAPI.changePassword(savedUser.id, {
+                currentPassword: currentPassword,
+                newPassword: newPassword,
+            });
             showToast('Password updated successfully!', 'success');
             setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
         } catch (err) {
-            setSecMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+            setSecMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update password. Is your current password correct?' });
         }
         setSecSaving(false);
+    };
+
+    const handleDoctorProfileSave = async () => {
+        if (!doctorProfile) return;
+        setDocMsg({ type: '', text: '' });
+        setDocSaving(true);
+        try {
+            const res = await doctorAPI.updateProfile(doctorProfile.id, {
+                specialization: docSpecialization,
+                phone: docPhone,
+                clinicAddress: clinicAddress,
+                consultationFee: parseFloat(consultationFee) || 0,
+            });
+            setDoctorProfile(res.data);
+            showToast('Doctor profile updated!', 'success');
+        } catch (err) {
+            setDocMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update doctor profile.' });
+        }
+        setDocSaving(false);
     };
 
     const handleLogout = () => {
@@ -147,28 +258,29 @@ const ProfilePage = () => {
                     <label>Phone Number</label>
                     <div className="input-wrapper">
                         <Phone size={18} className="input-icon" />
-                        <input type="text" value={profilePhone} onChange={(e) => { setProfilePhone(e.target.value); setProfileDirty(true); }} />
+                        <input type="text" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="Enter phone number" />
                     </div>
                 </div>
                 <div className="input-group full-width">
                     <label>Home Address</label>
                     <div className="input-wrapper">
                         <MapPin size={18} className="input-icon" />
-                        <textarea value={profileAddress} onChange={(e) => { setProfileAddress(e.target.value); setProfileDirty(true); }} />
+                        <textarea value={profileAddress} onChange={(e) => setProfileAddress(e.target.value)} placeholder="Enter your address" />
                     </div>
                 </div>
                 <div className="input-group">
                     <label>Date of Birth</label>
                     <div className="input-wrapper">
                         <Calendar size={18} className="input-icon" />
-                        <input type="text" value={profileDob} onChange={(e) => { setProfileDob(e.target.value); setProfileDirty(true); }} />
+                        <input type="date" value={profileDob} onChange={(e) => setProfileDob(e.target.value)} />
                     </div>
                 </div>
                 <div className="input-group">
                     <label>Blood Type</label>
                     <div className="input-wrapper">
                         <Droplets size={18} className="input-icon" />
-                        <select value={profileBlood} onChange={(e) => { setProfileBlood(e.target.value); setProfileDirty(true); }}>
+                        <select value={profileBlood} onChange={(e) => setProfileBlood(e.target.value)}>
+                            <option value="">Select</option>
                             <option value="O+">O+</option>
                             <option value="O-">O-</option>
                             <option value="A+">A+</option>
@@ -225,11 +337,58 @@ const ProfilePage = () => {
                 </div>
             </div>
             <div className="form-actions">
-                <button className="btn-cancel" onClick={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setSecMsg({type:'',text:''}); }}>
+                <button className="btn-cancel" onClick={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setSecMsg({ type: '', text: '' }); }}>
                     <X size={16} /> Clear
                 </button>
                 <button className="btn-save" onClick={handlePasswordChange} disabled={secSaving}>
                     <Lock size={16} /> {secSaving ? 'Updating...' : 'Update Password'}
+                </button>
+            </div>
+        </>
+    );
+
+    const renderDoctorSettingsTab = () => (
+        <>
+            <div className="form-header">
+                <h3>Doctor Settings</h3>
+                <p>Manage your consultation fee, clinic details, and specialization.</p>
+            </div>
+            {docMsg.text && (
+                <div className={`profile-alert ${docMsg.type}`}>{docMsg.text}</div>
+            )}
+            <div className="form-grid">
+                <div className="input-group">
+                    <label>Consultation Fee (₱)</label>
+                    <div className="input-wrapper">
+                        <DollarSign size={18} className="input-icon" />
+                        <input type="number" step="0.01" min="0" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)} placeholder="e.g. 1500.00" />
+                    </div>
+                </div>
+                <div className="input-group">
+                    <label>Specialization</label>
+                    <div className="input-wrapper">
+                        <Stethoscope size={18} className="input-icon" />
+                        <input type="text" value={docSpecialization} onChange={(e) => setDocSpecialization(e.target.value)} placeholder="e.g. Cardiology" />
+                    </div>
+                </div>
+                <div className="input-group full-width">
+                    <label>Clinic Address</label>
+                    <div className="input-wrapper">
+                        <Building2 size={18} className="input-icon" />
+                        <textarea value={clinicAddress} onChange={(e) => setClinicAddress(e.target.value)} placeholder="Enter your clinic address" />
+                    </div>
+                </div>
+                <div className="input-group">
+                    <label>Clinic Phone</label>
+                    <div className="input-wrapper">
+                        <Phone size={18} className="input-icon" />
+                        <input type="text" value={docPhone} onChange={(e) => setDocPhone(e.target.value)} placeholder="Clinic phone number" />
+                    </div>
+                </div>
+            </div>
+            <div className="form-actions">
+                <button className="btn-save" onClick={handleDoctorProfileSave} disabled={docSaving}>
+                    <Save size={16} /> {docSaving ? 'Saving...' : 'Save Doctor Settings'}
                 </button>
             </div>
         </>
@@ -319,6 +478,7 @@ const ProfilePage = () => {
         switch (activeTab) {
             case 'Profile Details': return renderProfileTab();
             case 'Security': return renderSecurityTab();
+            case 'Doctor Settings': return renderDoctorSettingsTab();
             case 'Notifications': return renderNotificationsTab();
             case 'Help': return renderHelpTab();
             default: return renderProfileTab();
@@ -329,10 +489,12 @@ const ProfilePage = () => {
         <div className="profile-container">
             {/* Header */}
             <header className="profile-header">
-                <div className="logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>Appoint<span>Med</span></div>
+                <div className="logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+                    <span>Appoint</span>Med
+                </div>
                 <nav className="header-nav">
                     <button className="nav-link-btn" onClick={() => navigate('/dashboard')}>Home</button>
-                    <button className="nav-link-btn" onClick={() => navigate('/specialists')}>Appointments</button>
+                    <button className="nav-link-btn" onClick={() => navigate(isDoctor ? '/appointments' : '/specialists')}>Appointments</button>
                     <button className="nav-link-btn active">Settings</button>
                     <div className="notification-icon">
                         <Bell size={20} />
@@ -347,15 +509,26 @@ const ProfilePage = () => {
                     <div className="user-info-section">
                         <div className="avatar-wrapper">
                             <div className="avatar-circle">
-                                <User size={60} color="#94a3b8" />
+                                {avatarPreview ? (
+                                    <img src={avatarPreview} alt="Profile" className="avatar-img" />
+                                ) : (
+                                    <User size={60} color="#94a3b8" />
+                                )}
                             </div>
-                            <button className="edit-avatar-btn">
+                            <label className="edit-avatar-btn" htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
                                 <Camera size={14} />
-                            </button>
+                            </label>
+                            <input
+                                id="avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={handleAvatarUpload}
+                            />
                         </div>
-                        <h2>{savedUser?.name || 'Alex Johnson'}</h2>
-                        <p className="patient-id">Patient ID: #{savedUser?.id || '88291'}</p>
-                        <span className="member-badge">MEMBER SINCE 2021</span>
+                        <h2>{savedUser?.name || 'User'}</h2>
+                        <p className="patient-id">{isDoctor ? 'Doctor' : 'Patient'} ID: #{savedUser?.id || '0'}</p>
+                        <span className="member-badge">{isDoctor ? 'DOCTOR' : 'PATIENT'}</span>
                     </div>
 
                     <nav className="sidebar-nav">
@@ -365,6 +538,11 @@ const ProfilePage = () => {
                         <button className={activeTab === 'Security' ? 'active' : ''} onClick={() => setActiveTab('Security')}>
                             <Lock size={18} /> Security
                         </button>
+                        {isDoctor && (
+                            <button className={activeTab === 'Doctor Settings' ? 'active' : ''} onClick={() => setActiveTab('Doctor Settings')}>
+                                <Stethoscope size={18} /> Doctor Settings
+                            </button>
+                        )}
                         <button className={activeTab === 'Notifications' ? 'active' : ''} onClick={() => setActiveTab('Notifications')}>
                             <BellRing size={18} /> Notifications
                         </button>

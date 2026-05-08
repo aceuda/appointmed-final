@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
+@Transactional
 public class UserService {
 
     @Autowired
@@ -48,18 +51,40 @@ public class UserService {
             user.setPassword(userDetails.getPassword());
         }
         user.setRole(userDetails.getRole());
-        user.setAvatarUrl(userDetails.getAvatarUrl());
-        user.setAvatarData(userDetails.getAvatarData());
-        if (userDetails.getPhone() != null) user.setPhone(userDetails.getPhone());
-        if (userDetails.getAddress() != null) user.setAddress(userDetails.getAddress());
-        if (userDetails.getGender() != null) user.setGender(userDetails.getGender());
-        if (userDetails.getBirthDate() != null) user.setBirthDate(userDetails.getBirthDate());
-        if (userDetails.getBloodType() != null) user.setBloodType(userDetails.getBloodType());
+        if (userDetails.getAvatarData() != null) {
+            user.setAvatarData(userDetails.getAvatarData());
+        }
+        if (userDetails.getAvatarUrl() != null && !userDetails.getAvatarUrl().startsWith("data:")) {
+            user.setAvatarUrl(userDetails.getAvatarUrl());
+        }
+        if (userDetails.getPhone() != null)
+            user.setPhone(userDetails.getPhone());
+        if (userDetails.getAddress() != null)
+            user.setAddress(userDetails.getAddress());
+        if (userDetails.getGender() != null)
+            user.setGender(userDetails.getGender());
+        if (userDetails.getBirthDate() != null)
+            user.setBirthDate(userDetails.getBirthDate());
+        if (userDetails.getBloodType() != null)
+            user.setBloodType(userDetails.getBloodType());
         return userRepository.save(user);
     }
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        if (user.getPassword() == null || !user.getPassword().equals(currentPassword)) {
+            throw new RuntimeException("Current password is incorrect.");
+        }
+        if (newPassword == null || newPassword.length() < 4) {
+            throw new RuntimeException("New password must be at least 4 characters.");
+        }
+        user.setPassword(newPassword);
+        userRepository.save(user);
     }
 
     public User register(RegisterRequest request) {
@@ -78,9 +103,12 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(role);
-        if (request.getGender() != null) user.setGender(request.getGender());
-        if (request.getAddress() != null) user.setAddress(request.getAddress());
-        if (request.getBirthDate() != null) user.setBirthDate(request.getBirthDate());
+        if (request.getGender() != null)
+            user.setGender(request.getGender());
+        if (request.getAddress() != null)
+            user.setAddress(request.getAddress());
+        if (request.getBirthDate() != null)
+            user.setBirthDate(request.getBirthDate());
 
         User savedUser = userRepository.save(user);
 

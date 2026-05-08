@@ -1,6 +1,7 @@
 package com.appointmed.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "doctors")
@@ -19,6 +20,9 @@ public class Doctor {
 
     private String clinicAddress;
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal consultationFee = new BigDecimal("500.00");
+
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -26,12 +30,13 @@ public class Doctor {
     public Doctor() {
     }
 
-    public Doctor(Long id, String specialization, String licenseNumber, String phone, String clinicAddress, User user) {
+    public Doctor(Long id, String specialization, String licenseNumber, String phone, String clinicAddress, BigDecimal consultationFee, User user) {
         this.id = id;
         this.specialization = specialization;
         this.licenseNumber = licenseNumber;
         this.phone = phone;
         this.clinicAddress = clinicAddress;
+        this.consultationFee = consultationFee != null ? consultationFee : new BigDecimal("500.00");
         this.user = user;
     }
 
@@ -53,6 +58,10 @@ public class Doctor {
 
     public String getClinicAddress() {
         return clinicAddress;
+    }
+
+    public BigDecimal getConsultationFee() {
+        return consultationFee;
     }
 
     public User getUser() {
@@ -77,6 +86,10 @@ public class Doctor {
 
     public void setClinicAddress(String clinicAddress) {
         this.clinicAddress = clinicAddress;
+    }
+
+    public void setConsultationFee(BigDecimal consultationFee) {
+        this.consultationFee = consultationFee;
     }
 
     public void setUser(User user) {

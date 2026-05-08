@@ -61,7 +61,11 @@ function BookingConfirmed({ booking }) {
 
                         <div className="detail-item location-item">
                             <span className="detail-label"><span className="material-symbols-outlined">location_on</span> Location</span>
-                            <span className="detail-value">Main Medical Plaza, Suite 402</span>
+                            <span className="detail-value">{booking?.doctor?.clinicAddress || 'Medical Center'}</span>
+                        </div>
+                        <div className="detail-item location-item">
+                            <span className="detail-label"><span className="material-symbols-outlined">payments</span> Fee</span>
+                            <span className="detail-value">₱{Number(booking?.doctor?.consultationFee || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
 

@@ -33,8 +33,8 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-    login: (creds) => api.post('/users/login', creds),
-    register: (data) => api.post('/users/register', data),
+    login: (creds) => api.post('/auth/login', creds),
+    register: (data) => api.post('/auth/register', data),
 };
 
 // User API
@@ -45,6 +45,7 @@ export const userAPI = {
     update: (id, userData) => api.put(`/users/${id}`, userData),
     delete: (id) => api.delete(`/users/${id}`),
     getStats: (id) => api.get(`/users/${id}/stats`),
+    changePassword: (id, data) => api.post(`/users/${id}/change-password`, data),
 };
 
 // Doctor API
@@ -59,6 +60,7 @@ export const doctorAPI = {
     getSchedule: (id) => api.get(`/doctors/${id}/schedule`),
     updateSchedule: (id, schedules) => api.put(`/doctors/${id}/schedule`, schedules),
     getByUserId: (userId) => api.get(`/doctors/user/${userId}`),
+    updateProfile: (id, data) => api.put(`/doctors/${id}/profile`, data),
 };
 
 // Appointment API
