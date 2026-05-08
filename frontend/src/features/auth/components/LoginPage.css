@@ -1,0 +1,224 @@
+:root {
+    --primary-dark: #3f4e60; /* Darker slate from image */
+    --accent-blue: #0ea5e9;  /* Sky 500 */
+    --bg-light: #f8fafc;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+}
+
+.login-page {
+    min-height: 100vh;
+    background-color: var(--bg-light);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Navbar */
+.login-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 4rem;
+}
+
+.login-logo {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text-main);
+    letter-spacing: -1px;
+}
+
+.login-logo span {
+    color: var(--accent-blue);
+}
+
+.help-button {
+    background: #f1f5f9;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+/* Card Styling */
+.login-main-content {
+    display: flex;
+    justify-content: center;
+    padding-top: 4rem;
+}
+
+.login-card {
+    background: white;
+    width: 100%;
+    max-width: 440px;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.login-card-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.login-card-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+/* Role Toggle */
+.role-toggle-container {
+    display: flex;
+    background: #f1f5f9;
+    padding: 5px;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.role-toggle-btn {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.role-toggle-btn.active {
+    background: white;
+    color: var(--text-main);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Inputs */
+.input-field {
+    text-align: left;
+    margin-bottom: 1.2rem;
+}
+
+.label-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.input-field label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.forgot-pw {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.input-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-control .icon {
+    position: absolute;
+    left: 12px;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+.input-control input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.input-control input:focus {
+    border-color: var(--accent-blue);
+}
+
+/* Button */
+.submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--primary-dark);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    opacity: 0.9;
+}
+
+/* Footer */
+.login-card-footer {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.register-link {
+    background: none;
+    border: none;
+    color: var(--primary-dark);
+    font-weight: 800;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.login-alert {
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+}
+
+.login-alert.error { background: #fee2e2; color: #b91c1c; }
+.login-alert.success { background: #dcfce7; color: #15803d; }
+
+/* ===== Mobile Responsiveness ===== */
+@media (max-width: 768px) {
+    .login-navbar { padding: 1rem 1.5rem; }
+    .login-logo { font-size: 1.4rem; }
+    .login-main-content { padding-top: 2rem; padding-left: 1rem; padding-right: 1rem; }
+    .login-card {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+        border-radius: 10px;
+    }
+    .login-card-header h1 { font-size: 1.5rem; }
+    .login-card-header p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .role-toggle-btn { padding: 0.6rem 0.5rem; font-size: 0.85rem; }
+    .input-control input { font-size: 0.9rem; padding: 0.7rem 0.8rem 0.7rem 2.2rem; }
+    .submit-btn { padding: 0.8rem; font-size: 0.9rem; }
+    .help-button { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+}
+
+@media (max-width: 480px) {
+    .login-navbar { padding: 0.75rem 1rem; }
+    .login-main-content { padding-top: 1.5rem; }
+    .login-card { padding: 1.25rem; margin: 0; }
+    .login-card-header h1 { font-size: 1.3rem; }
+}

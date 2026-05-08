@@ -4,7 +4,7 @@ import { useAuth, useToast } from "../../../contexts";
 import { appointmentAPI, doctorAPI, notificationAPI } from "../../../shared/services/api";
 import "./PatientDashboard.css";
 
-function PatientDashboard() {
+function PatientDashboard({ onSelectDoctor }) {
     const navigate = useNavigate();
     const { user, handleLogout } = useAuth();
     const showToast = useToast();
@@ -40,7 +40,7 @@ function PatientDashboard() {
                 try {
                     const notifRes = await notificationAPI.getUnread(user.id);
                     setUnreadCount(notifRes.data.count || 0);
-                } catch {}
+                } catch { }
             } catch (err) {
                 console.error('Dashboard load error:', err);
             }
@@ -97,8 +97,8 @@ function PatientDashboard() {
                             <p className="profile-role">{user?.role || ""}</p>
                         </div>
                         <div className="profile-avatar">
-                            {user?.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                            {(user?.avatarData || user?.avatarUrl) ? (
+                                <img src={user.avatarData || user.avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
                             ) : (
                                 <span className="material-symbols-outlined">account_circle</span>
                             )}
@@ -118,8 +118,8 @@ function PatientDashboard() {
                         <span>Appointments</span>
                     </button>
                     <button className="patient-nav-button" onClick={() => navigate('/specialists')}>
-                        <span className="material-symbols-outlined">medical_services</span>
-                        <span>Doctors</span>
+                        <span className="material-symbols-outlined">stethoscope</span>
+                        <span>Specialists</span>
                     </button>
                     <button className="patient-nav-button" onClick={() => navigate('/notifications')}>
                         <span className="material-symbols-outlined">notifications</span>
@@ -196,49 +196,7 @@ function PatientDashboard() {
                     )}
                 </section>
 
-                {/* Recent Appointments */}
-                {recentAppointments.length > 0 && (
-                    <section style={{ marginBottom: 28 }}>
-                        <div className="section-title-row">
-                            <h2>Recent Appointments</h2>
-                            <button className="btn-ghost" onClick={() => navigate('/appointments')} style={{ fontSize: 13 }}>View All →</button>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {recentAppointments.map(appt => (
-                                <div key={appt.id} style={{
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    background: '#fff', borderRadius: 10, padding: '12px 18px',
-                                    border: '1px solid #e2e8f0'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#94a3b8' }}>person</span>
-                                        </div>
-                                        <div>
-                                            <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#1e293b' }}>
-                                                {appt.doctor?.user?.name || 'Doctor'}
-                                            </p>
-                                            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
-                                                {appt.doctor?.specialization || 'Specialist'} • {formatDate(appt.appointmentDate)} at {formatTime(appt.appointmentTime)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{formatFee(appt.fee)}</span>
-                                        <span className={`appt-status-badge ${getStatusClass(appt.status)}`}
-                                            style={{
-                                                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                                                background: appt.status === 'CONFIRMED' ? '#dbeafe' : appt.status === 'PENDING' ? '#fef3c7' : appt.status === 'COMPLETED' ? '#d1fae5' : '#fee2e2',
-                                                color: appt.status === 'CONFIRMED' ? '#2563eb' : appt.status === 'PENDING' ? '#d97706' : appt.status === 'COMPLETED' ? '#059669' : '#dc2626',
-                                            }}>
-                                            {appt.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+
 
                 {/* Specialist Grid */}
                 <div className="section-title-row">
@@ -251,8 +209,8 @@ function PatientDashboard() {
                         <div className="doctor-card" key={doc.id}>
                             <div className="card-top">
                                 <div className="avatar-placeholder">
-                                    {doc.avatarUrl ? (
-                                        <img src={doc.avatarUrl} alt={doc.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                    {doc.user?.avatarData || (doc.avatarUrl && doc.avatarUrl !== 'null') ? (
+                                        <img src={doc.user?.avatarData || doc.avatarUrl} alt={doc.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                                     ) : (
                                         <span className="material-symbols-outlined">person</span>
                                     )}
@@ -265,7 +223,10 @@ function PatientDashboard() {
                                 <p><span className="material-symbols-outlined">location_on</span>{doc.clinicAddress || 'Clinic'}</p>
                                 <p><span className="material-symbols-outlined">payments</span> {formatFee(doc.consultationFee)} / session</p>
                             </div>
-                            <button className="btn-ghost" onClick={() => navigate('/specialists')}>Book Now</button>
+                            <button className="btn-ghost" onClick={() => {
+                                if (onSelectDoctor) onSelectDoctor(doc);
+                                navigate('/book-appointment');
+                            }}>Book Now</button>
                         </div>
                     )) : (
                         <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 32, color: '#94a3b8' }}>

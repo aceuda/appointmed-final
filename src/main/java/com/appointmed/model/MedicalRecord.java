@@ -31,11 +31,9 @@ public class MedicalRecord {
     @Column(nullable = false)
     private String diagnosis;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String treatment;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String notes;
 

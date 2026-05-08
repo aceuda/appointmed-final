@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast } from '../../../App';
+import { useAuth, useToast } from '../../../contexts';
 import { notificationAPI, userAPI } from '../../../shared/services/api';
 import './NotificationsPage.css';
 
@@ -110,9 +110,6 @@ function NotificationsPage() {
     return (
         <div className="notif-page">
             <aside className="notif-sidebar">
-                <div className="sidebar-logo">
-                    <span className="logo-dark">Appoint</span><span className="logo-blue">Med</span>
-                </div>
                 <nav className="sidebar-nav">
                     <button className="nav-item" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span> Dashboard
@@ -120,6 +117,11 @@ function NotificationsPage() {
                     <button className="nav-item" onClick={() => navigate('/appointments')}>
                         <span className="material-symbols-outlined">calendar_today</span> Appointments
                     </button>
+                    {user.role === 'PATIENT' && (
+                        <button className="nav-item" onClick={() => navigate('/specialists')}>
+                            <span className="material-symbols-outlined">stethoscope</span> Specialists
+                        </button>
+                    )}
                     <button className="nav-item active">
                         <span className="material-symbols-outlined">notifications</span> Notifications
                     </button>

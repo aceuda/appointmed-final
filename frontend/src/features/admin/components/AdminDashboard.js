@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast } from '../../../App';
+import { useAuth, useToast } from '../../../contexts';
 import { userAPI } from '../../../shared/services/api';
 import './AdminDashboard.css';
 

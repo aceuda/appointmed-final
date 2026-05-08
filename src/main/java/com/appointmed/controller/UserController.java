@@ -1,6 +1,7 @@
 package com.appointmed.controller;
 
 import com.appointmed.dto.AuthResponse;
+import com.appointmed.dto.ChangePasswordRequest;
 import com.appointmed.model.User;
 import com.appointmed.dto.LoginRequest;
 import com.appointmed.dto.RegisterRequest;
@@ -79,5 +80,15 @@ public class UserController {
                 "medicalRecords", records,
                 "activePrescriptions", prescriptions
         ));
+    }
+
+    @PostMapping("/{id}/change-password")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordRequest req) {
+        try {
+            userService.changePassword(id, req.getCurrentPassword(), req.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }

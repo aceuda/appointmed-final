@@ -13,6 +13,7 @@ function DoctorDashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [appointments, setAppointments] = useState([]);
     const [doctorProfile, setDoctorProfile] = useState(null);
+    const [consultationFee, setConsultationFee] = useState("");
     const [loading, setLoading] = useState(true);
 
     // Real slot data from the API: [{time, status, patientName?, appointmentId?, appointmentStatus?}]
@@ -26,6 +27,7 @@ function DoctorDashboard() {
                 // Get doctor profile
                 const docRes = await doctorAPI.getByUserId(user.id);
                 setDoctorProfile(docRes.data);
+                setConsultationFee(docRes.data.consultationFee || "");
 
                 // Get today's appointments
                 const today = new Date().toISOString().split('T')[0];
@@ -39,7 +41,7 @@ function DoctorDashboard() {
                 try {
                     const allAppts = await appointmentAPI.getAll();
                     setAppointments(allAppts.data.filter(a => a.doctor?.user?.id === user.id));
-                } catch {}
+                } catch { }
             }
             setLoading(false);
         };
@@ -74,7 +76,7 @@ function DoctorDashboard() {
         }
         try {
             // Build schedule entries from available slots for each weekday
-            const dayNames = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dayNames = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
             const schedules = [];
             const availableSlots = slots.filter(s => s.status === 'available');
 
@@ -95,7 +97,8 @@ function DoctorDashboard() {
             }
 
             await doctorAPI.updateSchedule(doctorProfile.id, schedules);
-            showToast("Availability saved successfully!", "success");
+            await doctorAPI.updateProfile(doctorProfile.id, { consultationFee: parseFloat(consultationFee) || 0 });
+            showToast("Availability and Consultation Fee saved successfully!", "success");
         } catch (err) {
             showToast("Failed to save availability.", "error");
             console.error(err);
@@ -144,7 +147,7 @@ function DoctorDashboard() {
         try {
             await appointmentAPI.confirm(id);
             showToast("Appointment confirmed!", "success");
-            setAppointments(prev => prev.map(a => a.id === id ? {...a, status: 'CONFIRMED'} : a));
+            setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'CONFIRMED' } : a));
             // Refresh slots to reflect status change
             if (doctorProfile) {
                 const today = new Date().toISOString().split('T')[0];
@@ -157,7 +160,7 @@ function DoctorDashboard() {
         try {
             await appointmentAPI.complete(id);
             showToast("Appointment marked as completed!", "success");
-            setAppointments(prev => prev.map(a => a.id === id ? {...a, status: 'COMPLETED'} : a));
+            setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'COMPLETED' } : a));
             // Refresh slots to reflect status change
             if (doctorProfile) {
                 const today = new Date().toISOString().split('T')[0];
@@ -203,14 +206,14 @@ function DoctorDashboard() {
                         <span className="material-symbols-outlined">notifications</span>
                     </button>
                     <div className="divider"></div>
-                    <div className="user-profile-header" onClick={() => navigate('/profile')} style={{cursor:'pointer'}}>
+                    <div className="user-profile-header" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
                         <div className="profile-text">
                             <p className="profile-name">{doctorName}</p>
                             <p className="profile-role">DOCTOR</p>
                         </div>
                         <div className="profile-avatar">
-                            {user?.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                            {(user?.avatarData || user?.avatarUrl) ? (
+                                <img src={user.avatarData || user.avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
                             ) : (
                                 <span className="material-symbols-outlined">account_circle</span>
                             )}
@@ -226,10 +229,7 @@ function DoctorDashboard() {
                             <span className="material-symbols-outlined">dashboard</span><span>Dashboard</span>
                         </button>
                         <button className="nav-link" onClick={() => navigate('/appointments')}>
-                            <span className="material-symbols-outlined">groups</span><span>Patients</span>
-                        </button>
-                        <button className="nav-link" onClick={() => navigate('/appointments')}>
-                            <span className="material-symbols-outlined">calendar_today</span><span>Schedule</span>
+                            <span className="material-symbols-outlined">calendar_today</span><span>Appointments</span>
                         </button>
                         <button className="nav-link" onClick={() => navigate('/notifications')}>
                             <span className="material-symbols-outlined">notifications</span><span>Notifications</span>
@@ -249,7 +249,7 @@ function DoctorDashboard() {
                     <div className="content-header">
                         <div>
                             <h1 className="page-title">Doctor's Dashboard</h1>
-                            <p className="page-subtitle">{new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</p>
+                            <p className="page-subtitle">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         <div className="action-buttons">
                             <button onClick={handlePrint} className="btn-secondary">
@@ -292,16 +292,22 @@ function DoctorDashboard() {
                             </div>
                             <div className="appointment-list">
                                 {loading ? (
-                                    <div style={{padding:24,textAlign:'center',color:'#94a3b8'}}>Loading appointments...</div>
+                                    <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Loading appointments...</div>
                                 ) : filteredAppointments.length === 0 ? (
-                                    <div style={{padding:24,textAlign:'center',color:'#94a3b8'}}>
-                                        <span className="material-symbols-outlined" style={{fontSize:36}}>event_busy</span>
+                                    <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 36 }}>event_busy</span>
                                         <p>No appointments for today</p>
                                     </div>
                                 ) : (
                                     filteredAppointments.map((appointment) => (
                                         <div key={appointment.id} className={`appointment-item ${appointment.status === "COMPLETED" ? "completed" : ""}`}>
-                                            <div className="patient-avatar"><span className="material-symbols-outlined">account_circle</span></div>
+                                            <div className="patient-avatar">
+                                                {appointment.patient?.avatarData ? (
+                                                    <img src={appointment.patient.avatarData} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <span className="material-symbols-outlined">account_circle</span>
+                                                )}
+                                            </div>
                                             <div className="appointment-info">
                                                 <h4>{appointment.patient?.name || 'Patient'}</h4>
                                                 <p>{appointment.reason || 'Consultation'} • {appointment.appointmentTime || ''}</p>
@@ -309,10 +315,10 @@ function DoctorDashboard() {
                                             <div className="appointment-status">
                                                 <span className={`status-badge ${getStatusBadge(appointment.status)}`}>{appointment.status}</span>
                                                 {appointment.status === 'PENDING' && (
-                                                    <button onClick={() => handleConfirm(appointment.id)} style={{marginLeft:8,padding:'4px 10px',borderRadius:6,border:'none',background:'#10B981',color:'#fff',cursor:'pointer',fontSize:12}}>Confirm</button>
+                                                    <button onClick={() => handleConfirm(appointment.id)} style={{ marginLeft: 8, padding: '4px 10px', borderRadius: 6, border: 'none', background: '#10B981', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Confirm</button>
                                                 )}
                                                 {appointment.status === 'CONFIRMED' && (
-                                                    <button onClick={() => handleComplete(appointment.id)} style={{marginLeft:8,padding:'4px 10px',borderRadius:6,border:'none',background:'#2563EB',color:'#fff',cursor:'pointer',fontSize:12}}>Complete</button>
+                                                    <button onClick={() => handleComplete(appointment.id)} style={{ marginLeft: 8, padding: '4px 10px', borderRadius: 6, border: 'none', background: '#2563EB', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Complete</button>
                                                 )}
                                             </div>
                                         </div>
@@ -333,9 +339,9 @@ function DoctorDashboard() {
                                 </div>
                                 <p className="toggle-hint"><span className="material-symbols-outlined">touch_app</span> Click an available or blocked slot to toggle its availability</p>
                                 {slotsLoading ? (
-                                    <p style={{textAlign:'center',color:'#94a3b8',padding:16}}>Loading schedule...</p>
+                                    <p style={{ textAlign: 'center', color: '#94a3b8', padding: 16 }}>Loading schedule...</p>
                                 ) : slots.length === 0 ? (
-                                    <p style={{textAlign:'center',color:'#94a3b8',padding:16}}>No schedule configured for today</p>
+                                    <p style={{ textAlign: 'center', color: '#94a3b8', padding: 16 }}>No schedule configured for today</p>
                                 ) : (
                                     <div className="slots-grid">
                                         {slots.map((slot, index) => {
@@ -376,6 +382,16 @@ function DoctorDashboard() {
                                         })}
                                     </div>
                                 )}
+                                <div style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <label style={{ fontWeight: 600, color: '#1e293b' }}>Consultation Fee (₱):</label>
+                                    <input
+                                        type="number"
+                                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', width: '120px' }}
+                                        value={consultationFee}
+                                        onChange={(e) => setConsultationFee(e.target.value)}
+                                        placeholder="e.g. 1500"
+                                    />
+                                </div>
                                 <button className="btn-save" onClick={handleSaveChanges}>
                                     <span className="material-symbols-outlined">save</span> Save Schedule
                                 </button>

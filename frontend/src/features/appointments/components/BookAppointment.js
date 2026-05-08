@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast } from '../../../App';
+import { useAuth, useToast } from '../../../contexts';
 import { doctorAPI, appointmentAPI } from '../../../shared/services/api';
 import './BookAppointment.css';
 
@@ -98,7 +98,7 @@ function BookAppointment({ doctor, onConfirm }) {
                 appointmentDate: dateStr,
                 appointmentTime: selectedSlot,
                 reason: reason || 'General Consultation',
-                fee: 1500
+                fee: doctor.consultationFee || 500
             });
 
             const bookingDetails = {
@@ -196,7 +196,7 @@ function BookAppointment({ doctor, onConfirm }) {
                         <div className="doc-meta-list">
                             <p>★ {doctor.rating?.toFixed(1) || '4.5'} ({doctor.reviews || 0}+ reviews)</p>
                             <p><span className="material-symbols-outlined">location_on</span> {doctor.clinicAddress || 'Medical Center'}</p>
-                            <p><span className="material-symbols-outlined">payments</span> ₱1,500 per visit</p>
+                            <p><span className="material-symbols-outlined">payments</span> ₱{Number(doctor.consultationFee || 500).toLocaleString('en-PH', { minimumFractionDigits: 2 })} per visit</p>
                         </div>
                         <button className="btn-change-doc" onClick={() => navigate('/specialists')}>Change Doctor</button>
                     </div>

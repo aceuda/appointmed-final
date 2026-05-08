@@ -1,5 +1,6 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext, ToastContext, useAuth, useToast } from './contexts';
 import { LoginPage, RegisterPage } from './features/auth';
 import { DoctorDashboard, PatientDashboard } from './features/dashboard';
 import { ProfilePage } from './features/profile';
@@ -8,25 +9,20 @@ import { SelectSpecialist, BookAppointment, BookingConfirmed, AppointmentsPage }
 import { NotificationsPage } from './features/notifications';
 import './App.css';
 
-// Auth Context
-const AuthContext = createContext(null);
-export const useAuth = () => useContext(AuthContext);
-
-// Toast notification context
-const ToastContext = createContext(null);
-export const useToast = () => useContext(ToastContext);
+// Re-export hooks for backward compatibility with any direct App imports
+export { useAuth, useToast };
 
 function Toast({ toasts, removeToast }) {
   return (
-    <div style={{position:'fixed',top:20,right:20,zIndex:9999,display:'flex',flexDirection:'column',gap:8}}>
+    <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8 }}>
       {toasts.map(t => (
         <div key={t.id} onClick={() => removeToast(t.id)} style={{
-          padding:'12px 20px',borderRadius:10,color:'#fff',fontSize:14,fontFamily:'Lexend,sans-serif',
-          cursor:'pointer',minWidth:280,boxShadow:'0 4px 20px rgba(0,0,0,0.15)',
-          animation:'slideIn 0.3s ease',
+          padding: '12px 20px', borderRadius: 10, color: '#fff', fontSize: 14, fontFamily: 'Lexend,sans-serif',
+          cursor: 'pointer', minWidth: 280, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          animation: 'slideIn 0.3s ease',
           background: t.type === 'success' ? 'linear-gradient(135deg,#10B981,#059669)' :
-                     t.type === 'error' ? 'linear-gradient(135deg,#EF4444,#DC2626)' :
-                     'linear-gradient(135deg,#3B82F6,#2563EB)'
+            t.type === 'error' ? 'linear-gradient(135deg,#EF4444,#DC2626)' :
+              'linear-gradient(135deg,#3B82F6,#2563EB)'
         }}>
           {t.message}
         </div>
@@ -46,7 +42,7 @@ function App() {
     const stored = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (stored && token) {
-      try { setUser(JSON.parse(stored)); } catch {}
+      try { setUser(JSON.parse(stored)); } catch { }
     }
     setLoading(false);
   }, []);
@@ -64,6 +60,7 @@ function App() {
       email: authResponse.email,
       role: authResponse.role,
       avatarUrl: authResponse.avatarUrl,
+      avatarData: authResponse.avatarData || null,
     };
     localStorage.setItem('token', authResponse.token);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -85,7 +82,7 @@ function App() {
     setUser(updatedUser);
   };
 
-  if (loading) return <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',fontFamily:'Lexend'}}>Loading...</div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'Lexend' }}>Loading...</div>;
 
   return (
     <AuthContext.Provider value={{ user, handleLogin, handleLogout, updateUser }}>
@@ -99,9 +96,9 @@ function App() {
           {/* Protected routes */}
           <Route path="/dashboard" element={
             !user ? <Navigate to="/login" /> :
-            user.role === 'ADMIN' ? <AdminDashboard /> :
-            user.role === 'DOCTOR' ? <DoctorDashboard /> :
-            <PatientDashboard />
+              user.role === 'ADMIN' ? <AdminDashboard /> :
+                user.role === 'DOCTOR' ? <DoctorDashboard /> :
+                  <PatientDashboard onSelectDoctor={(doc) => setSelectedDoctor(doc)} />
           } />
           <Route path="/profile" element={!user ? <Navigate to="/login" /> : <ProfilePage />} />
           <Route path="/appointments" element={!user ? <Navigate to="/login" /> : <AppointmentsPage />} />
@@ -125,10 +122,10 @@ function App() {
           {/* Redirects */}
           <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
           <Route path="*" element={
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'Lexend',color:'#64748b'}}>
-              <h1 style={{fontSize:72,margin:0,color:'#2563EB'}}>404</h1>
-              <p style={{fontSize:18}}>Page not found</p>
-              <a href={user ? "/dashboard" : "/login"} style={{color:'#2563EB',textDecoration:'none',marginTop:16}}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'Lexend', color: '#64748b' }}>
+              <h1 style={{ fontSize: 72, margin: 0, color: '#2563EB' }}>404</h1>
+              <p style={{ fontSize: 18 }}>Page not found</p>
+              <a href={user ? "/dashboard" : "/login"} style={{ color: '#2563EB', textDecoration: 'none', marginTop: 16 }}>
                 ← Go back
               </a>
             </div>

@@ -44,7 +44,6 @@ public class Prescription {
     @Builder.Default
     private Status status = Status.ACTIVE;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String notes;
 

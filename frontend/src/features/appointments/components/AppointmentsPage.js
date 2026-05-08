@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast } from '../../../App';
-import { appointmentAPI } from '../../../shared/services/api';
+import { useAuth, useToast } from '../../../contexts';
+import { appointmentAPI, doctorAPI } from '../../../shared/services/api';
 import './AppointmentsPage.css';
 
 function AppointmentsPage() {
@@ -12,6 +12,7 @@ function AppointmentsPage() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
+    const [doctorProfile, setDoctorProfile] = useState(null);
 
     useEffect(() => {
         if (!user) return;
@@ -22,8 +23,16 @@ function AppointmentsPage() {
         try {
             let res;
             if (user.role === 'DOCTOR') {
-                res = await appointmentAPI.getAll();
-                setAppointments((res.data || []).filter(a => a.doctor?.user?.id === user.id));
+                // Get doctor profile first, then fetch by doctor ID
+                try {
+                    const docRes = await doctorAPI.getByUserId(user.id);
+                    setDoctorProfile(docRes.data);
+                    res = await appointmentAPI.getByDoctor(docRes.data.id);
+                    setAppointments(res.data || []);
+                } catch {
+                    res = await appointmentAPI.getAll();
+                    setAppointments((res.data || []).filter(a => a.doctor?.user?.id === user.id));
+                }
             } else {
                 res = await appointmentAPI.getByPatient(user.id);
                 setAppointments(res.data || []);
@@ -92,11 +101,22 @@ function AppointmentsPage() {
         return `${h12}:${m} ${ampm}`;
     };
 
+    const formatFee = (fee) => {
+        if (!fee && fee !== 0) return '₱0.00';
+        return `₱${Number(fee).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+    };
+
     const renderCard = (appt) => (
         <div className="appt-card" key={appt.id}>
             <div className="appt-card-left">
                 <div className="appt-avatar">
-                    <span className="material-symbols-outlined">account_circle</span>
+                    {user.role === 'PATIENT' && (appt.doctor?.user?.avatarData || appt.doctor?.avatarUrl) ? (
+                        <img src={appt.doctor.user?.avatarData || appt.doctor.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : user.role === 'DOCTOR' && (appt.patient?.avatarData || appt.patient?.avatarUrl) ? (
+                        <img src={appt.patient.avatarData || appt.patient.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                        <span className="material-symbols-outlined">account_circle</span>
+                    )}
                 </div>
                 <div className="appt-info">
                     <h4>
@@ -111,12 +131,15 @@ function AppointmentsPage() {
                         <span><span className="material-symbols-outlined">calendar_today</span> {formatDate(appt.appointmentDate)}</span>
                         <span><span className="material-symbols-outlined">schedule</span> {formatTime(appt.appointmentTime)}</span>
                     </div>
+                    {user.role === 'PATIENT' && appt.doctor?.clinicAddress && (
+                        <p className="appt-clinic"><span className="material-symbols-outlined">location_on</span> {appt.doctor.clinicAddress}</p>
+                    )}
                     <p className="appt-reason"><span className="material-symbols-outlined">description</span> {appt.reason || 'General Consultation'}</p>
                 </div>
             </div>
             <div className="appt-card-right">
                 <span className={`appt-status ${getStatusClass(appt.status)}`}>{appt.status}</span>
-                <span className="appt-fee">₱{(appt.fee || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                <span className="appt-fee">{formatFee(appt.fee)}</span>
                 <div className="appt-actions">
                     {user.role === 'DOCTOR' && appt.status === 'PENDING' && (
                         <button className="btn-confirm-appt" onClick={() => handleConfirm(appt.id)}>Confirm</button>
@@ -135,9 +158,6 @@ function AppointmentsPage() {
     return (
         <div className="appointments-page">
             <aside className="appt-sidebar">
-                <div className="sidebar-logo">
-                    <span className="logo-dark">Appoint</span><span className="logo-blue">Med</span>
-                </div>
                 <nav className="sidebar-nav">
                     <button className="nav-item" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span> Dashboard
@@ -184,15 +204,15 @@ function AppointmentsPage() {
                         <div><p className="stat-num">{appointments.length}</p><p className="stat-label">Total</p></div>
                     </div>
                     <div className="stat-card-mini" onClick={() => setFilter('PENDING')}>
-                        <span className="material-symbols-outlined" style={{color:'#f59e0b'}}>pending_actions</span>
+                        <span className="material-symbols-outlined" style={{ color: '#f59e0b' }}>pending_actions</span>
                         <div><p className="stat-num">{appointments.filter(a => a.status === 'PENDING').length}</p><p className="stat-label">Pending</p></div>
                     </div>
                     <div className="stat-card-mini" onClick={() => setFilter('CONFIRMED')}>
-                        <span className="material-symbols-outlined" style={{color:'#2563eb'}}>event_available</span>
+                        <span className="material-symbols-outlined" style={{ color: '#2563eb' }}>event_available</span>
                         <div><p className="stat-num">{appointments.filter(a => a.status === 'CONFIRMED').length}</p><p className="stat-label">Confirmed</p></div>
                     </div>
                     <div className="stat-card-mini" onClick={() => setFilter('COMPLETED')}>
-                        <span className="material-symbols-outlined" style={{color:'#10b981'}}>check_circle</span>
+                        <span className="material-symbols-outlined" style={{ color: '#10b981' }}>check_circle</span>
                         <div><p className="stat-num">{appointments.filter(a => a.status === 'COMPLETED').length}</p><p className="stat-label">Completed</p></div>
                     </div>
                 </div>

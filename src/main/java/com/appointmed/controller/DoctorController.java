@@ -1,5 +1,6 @@
 package com.appointmed.controller;
 
+import com.appointmed.dto.DoctorProfileUpdateRequest;
 import com.appointmed.dto.DoctorResponse;
 import com.appointmed.model.DoctorSchedule;
 import com.appointmed.service.DoctorService;
@@ -74,5 +75,11 @@ public class DoctorController {
     public ResponseEntity<DoctorResponse> getByUserId(@PathVariable Long userId) {
         var doc = doctorService.getDoctorByUserId(userId);
         return ResponseEntity.ok(doctorService.getDoctorById(doc.getId()));
+    }
+
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<DoctorResponse> updateProfile(@PathVariable Long id,
+                                                         @RequestBody DoctorProfileUpdateRequest req) {
+        return ResponseEntity.ok(doctorService.updateDoctorProfile(id, req));
     }
 }

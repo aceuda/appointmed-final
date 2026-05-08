@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../App';
+import { useAuth } from '../../../contexts';
 import { doctorAPI } from '../../../shared/services/api';
 import './SelectSpecialist.css';
 
 function SelectSpecialist({ onSelectDoctor }) {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, handleLogout } = useAuth();
     const [doctors, setDoctors] = useState([]);
     const [specializations, setSpecializations] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,7 +34,8 @@ function SelectSpecialist({ onSelectDoctor }) {
     const filteredDoctors = useMemo(() => {
         return doctors.filter(doc => {
             const matchSearch = doc.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                doc.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
+                doc.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                doc.clinicAddress?.toLowerCase().includes(searchTerm.toLowerCase());
             const matchFilter = activeFilter === 'All Specialists' || doc.specialization === activeFilter;
             return matchSearch && matchFilter;
         });
@@ -48,35 +49,35 @@ function SelectSpecialist({ onSelectDoctor }) {
         navigate('/book-appointment');
     };
 
+    const formatFee = (fee) => {
+        if (!fee && fee !== 0) return '—';
+        return `₱${Number(fee).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+    };
+
     return (
         <div className="specialist-page">
             <aside className="specialist-sidebar">
-                <div className="sidebar-logo">
-                    <span className="logo-dark">Appoint</span><span className="logo-blue">Med</span>
-                </div>
                 <nav className="sidebar-nav">
                     <button className="nav-item" onClick={() => navigate('/dashboard')}>
                         <span className="material-symbols-outlined">dashboard</span> Dashboard
                     </button>
-                    <button className="nav-item" onClick={() => navigate('/specialists')}>
+                    <button className="nav-item" onClick={() => navigate('/appointments')}>
                         <span className="material-symbols-outlined">calendar_today</span> Appointments
                     </button>
                     <button className="nav-item active">
                         <span className="material-symbols-outlined">stethoscope</span> Specialists
                     </button>
-                    <button className="nav-item">
-                        <span className="material-symbols-outlined">chat_bubble</span> Messages
+                    <button className="nav-item" onClick={() => navigate('/notifications')}>
+                        <span className="material-symbols-outlined">notifications</span> Notifications
                     </button>
                     <button className="nav-item" onClick={() => navigate('/profile')}>
                         <span className="material-symbols-outlined">settings</span> Settings
                     </button>
                 </nav>
-                <div className="sidebar-user">
-                    <span className="material-symbols-outlined">account_circle</span>
-                    <div>
-                        <p className="user-name">{user?.name || 'Patient'}</p>
-                        <p className="user-role">Patient Account</p>
-                    </div>
+                <div className="sidebar-footer">
+                    <button className="logout-btn" onClick={handleLogout}>
+                        <span className="material-symbols-outlined">logout</span> Logout
+                    </button>
                 </div>
             </aside>
 
@@ -119,16 +120,31 @@ function SelectSpecialist({ onSelectDoctor }) {
                             <div className="doctor-card" key={doc.id}>
                                 <div className="card-avatar-wrapper">
                                     <div className="card-avatar">
-                                        <span className="material-symbols-outlined">person</span>
+                                        {doc.user?.avatarData || (doc.avatarUrl && doc.avatarUrl !== 'null') ? (
+                                            <img src={doc.user?.avatarData || doc.avatarUrl} alt={doc.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <span className="material-symbols-outlined">person</span>
+                                        )}
                                     </div>
                                     {doc.available && <span className="online-dot"></span>}
                                 </div>
                                 <h4>{doc.name}</h4>
                                 <p className="card-specialty">{doc.specialization}</p>
+                                <div className="card-meta-details">
+                                    {doc.clinicAddress && (
+                                        <p className="card-clinic"><span className="material-symbols-outlined" style={{fontSize:14}}>location_on</span> {doc.clinicAddress}</p>
+                                    )}
+                                    <p className="card-fee"><span className="material-symbols-outlined" style={{fontSize:14}}>payments</span> {formatFee(doc.consultationFee)} / visit</p>
+                                </div>
                                 <div className="card-rating">
                                     <span className="star">★</span> {doc.rating?.toFixed(1) || '4.5'} <span className="review-count">({doc.reviews || 0} reviews)</span>
                                 </div>
-                                <button className="btn-select" onClick={() => handleSelect(doc)}>Select</button>
+                                <div className="card-status-row">
+                                    <span className={`availability-badge ${doc.available ? 'avail-yes' : 'avail-no'}`}>
+                                        {doc.available ? '● Available' : '● Unavailable'}
+                                    </span>
+                                </div>
+                                <button className="btn-select" onClick={() => handleSelect(doc)}>Book Appointment</button>
                             </div>
                         ))
                     )}
