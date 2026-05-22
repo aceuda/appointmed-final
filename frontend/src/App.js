@@ -4,7 +4,6 @@ import { AuthContext, ToastContext, useAuth, useToast } from './contexts';
 import { LoginPage, RegisterPage } from './features/auth';
 import { DoctorDashboard, PatientDashboard } from './features/dashboard';
 import { ProfilePage } from './features/profile';
-import { AdminDashboard } from './features/admin';
 import { SelectSpecialist, BookAppointment, BookingConfirmed, AppointmentsPage } from './features/appointments';
 import { NotificationsPage } from './features/notifications';
 import './App.css';
@@ -96,9 +95,8 @@ function App() {
           {/* Protected routes */}
           <Route path="/dashboard" element={
             !user ? <Navigate to="/login" /> :
-              user.role === 'ADMIN' ? <AdminDashboard /> :
-                user.role === 'DOCTOR' ? <DoctorDashboard /> :
-                  <PatientDashboard onSelectDoctor={(doc) => setSelectedDoctor(doc)} />
+              user.role === 'DOCTOR' ? <DoctorDashboard /> :
+                <PatientDashboard onSelectDoctor={(doc) => setSelectedDoctor(doc)} />
           } />
           <Route path="/profile" element={!user ? <Navigate to="/login" /> : <ProfilePage />} />
           <Route path="/appointments" element={!user ? <Navigate to="/login" /> : <AppointmentsPage />} />
@@ -113,9 +111,6 @@ function App() {
           } />
           <Route path="/booking-confirmed" element={!user ? <Navigate to="/login" /> :
             <BookingConfirmed booking={bookingDetails} />
-          } />
-          <Route path="/admin" element={
-            !user || user.role !== 'ADMIN' ? <Navigate to="/dashboard" /> : <AdminDashboard />
           } />
           <Route path="/notifications" element={!user ? <Navigate to="/login" /> : <NotificationsPage />} />
 

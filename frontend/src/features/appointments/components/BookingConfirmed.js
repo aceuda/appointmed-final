@@ -8,8 +8,7 @@ function BookingConfirmed({ booking }) {
         const title = `Appointment with ${booking?.doctor?.name || 'Doctor'}`;
         const details = `${booking?.doctor?.specialty || ''} appointment - ${booking?.reason || 'General consultation'}`;
         const dateStr = booking?.date || 'October 24, 2023';
-        const timeStr = booking?.time || '10:30 AM';
-        
+
         // Create a Google Calendar link
         const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(details)}&dates=${encodeURIComponent(dateStr)}`;
         window.open(url, '_blank');
@@ -37,7 +36,7 @@ function BookingConfirmed({ booking }) {
 
                     <div className="appointment-details">
                         <p className="details-label">APPOINTMENT DETAILS</p>
-                        
+
                         <div className="details-doctor">
                             <div className="details-doc-avatar">
                                 <span className="material-symbols-outlined">clinical_notes</span>

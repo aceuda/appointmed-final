@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth, useToast } from "../../../contexts";
+import { useAuth } from "../../../contexts";
 import { appointmentAPI, doctorAPI, notificationAPI } from "../../../shared/services/api";
 import "./PatientDashboard.css";
 
 function PatientDashboard({ onSelectDoctor }) {
     const navigate = useNavigate();
     const { user, handleLogout } = useAuth();
-    const showToast = useToast();
     const patientName = user?.name || "Patient";
 
     const [upcomingAppt, setUpcomingAppt] = useState(null);
-    const [recentAppointments, setRecentAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -23,9 +21,6 @@ function PatientDashboard({ onSelectDoctor }) {
                 // Fetch all appointments and find the most recent upcoming one
                 const apptRes = await appointmentAPI.getByPatient(user.id);
                 const allAppts = apptRes.data || [];
-
-                // Store recent appointments for the list
-                setRecentAppointments(allAppts.slice(0, 5));
 
                 const upcoming = allAppts
                     .filter(a => a.status !== 'CANCELLED' && a.status !== 'COMPLETED')
@@ -67,16 +62,6 @@ function PatientDashboard({ onSelectDoctor }) {
     const formatFee = (fee) => {
         if (!fee && fee !== 0) return '—';
         return `₱${Number(fee).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
-    };
-
-    const getStatusClass = (status) => {
-        switch (status) {
-            case 'CONFIRMED': return 'stat-confirmed';
-            case 'PENDING': return 'stat-pending';
-            case 'COMPLETED': return 'stat-completed';
-            case 'CANCELLED': return 'stat-cancelled';
-            default: return '';
-        }
     };
 
     return (

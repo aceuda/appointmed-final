@@ -94,8 +94,8 @@ public class UserService {
 
         String role = request.getRole().toUpperCase(Locale.ROOT);
 
-        if (!role.equals("PATIENT") && !role.equals("DOCTOR") && !role.equals("ADMIN")) {
-            throw new RuntimeException("Invalid role. Only PATIENT, DOCTOR or ADMIN allowed.");
+        if (!role.equals("PATIENT") && !role.equals("DOCTOR")) {
+            throw new RuntimeException("Invalid role. Only PATIENT or DOCTOR allowed.");
         }
 
         User user = new User();
@@ -109,6 +109,8 @@ public class UserService {
             user.setAddress(request.getAddress());
         if (request.getBirthDate() != null)
             user.setBirthDate(request.getBirthDate());
+        if (request.getPhone() != null)
+            user.setPhone(request.getPhone());
 
         User savedUser = userRepository.save(user);
 
@@ -133,6 +135,10 @@ public class UserService {
 
     public Optional<User> login(LoginRequest request) {
         String role = request.getRole().toUpperCase(Locale.ROOT);
+
+        if (role.equals("ADMIN")) {
+            return Optional.empty();
+        }
 
         Optional<User> userOpt = userRepository.findByEmailAndRole(request.getEmail(), role);
 

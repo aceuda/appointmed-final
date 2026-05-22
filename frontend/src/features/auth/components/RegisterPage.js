@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useToast } from "../../../contexts";
 import { authAPI } from "../../../shared/services/api";
+import { Eye, EyeOff } from "lucide-react";
 import "./RegisterPage.css";
 
 function RegisterPage() {
@@ -201,7 +202,9 @@ function RegisterPage() {
                                 <label>Password</label>
                                 <div className="password-wrapper">
                                     <input className="input-control" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} required />
-                                    <span className="pw-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "🙈" : "👁"}</span>
+                                    <span className="pw-toggle" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </span>
                                 </div>
                             </div>
                             <div className="input-field">
