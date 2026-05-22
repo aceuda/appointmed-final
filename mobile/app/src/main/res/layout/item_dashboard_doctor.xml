@@ -19,11 +19,11 @@
             android:background="@drawable/bg_doctor_avatar" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:id="@+id/imageDoctorAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:src="@android:drawable/ic_menu_myplaces"
-            android:tint="#94A3B8"
             android:contentDescription="Doctor avatar" />
     </FrameLayout>
 

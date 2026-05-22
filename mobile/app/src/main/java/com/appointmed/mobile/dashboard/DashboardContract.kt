@@ -12,14 +12,20 @@ interface DashboardContract {
         fun navigateToNotifications()
         fun showNotificationToast()
         fun showSearchToast()
-        fun showUpcomingAppointment(doctorName: String, details: String, appointmentId: String)
+        fun showUpcomingAppointment(doctorName: String, details: String, appointmentId: String, avatarData: String?)
         fun hideUpcomingAppointment()
         fun showWelcomeName(name: String)
+        fun showUserAvatar(avatarData: String?)
         fun showAvailableDoctors(doctors: List<DoctorItem>)
         fun showDoctorAppointments(appointments: List<com.appointmed.mobile.data.model.Appointment>)
+        fun showDoctorStats(patientCount: Int)
         fun showLoadingDoctors()
         fun hideLoadingDoctors()
         fun setDashboardViewType(isDoctor: Boolean)
+        fun showDoctorDashboardStats(totalAppts: Int, bookedSlots: Int, totalSlots: Int)
+        fun showDoctorDailyOverview(appointments: List<com.appointmed.mobile.data.model.Appointment>)
+        fun showDoctorSchedule(slots: List<com.appointmed.mobile.data.model.SlotStatus>)
+        fun showToast(msg: String)
     }
 
     interface Presenter {
@@ -31,6 +37,9 @@ interface DashboardContract {
         fun onSearchClicked()
         fun onScheduleClicked()
         fun onRecordsClicked()
+        fun confirmAppointment(id: Long)
+        fun completeAppointment(id: Long)
+        fun toggleSlotAvailability(slot: com.appointmed.mobile.data.model.SlotStatus)
         fun onDestroy()
     }
 }

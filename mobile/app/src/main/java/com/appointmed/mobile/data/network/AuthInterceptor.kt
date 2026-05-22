@@ -21,6 +21,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
 
         requestBuilder.addHeader("Accept", "application/json")
         requestBuilder.addHeader("Content-Type", "application/json")
+        requestBuilder.addHeader("Cache-Control", "no-cache")
         return chain.proceed(requestBuilder.build())
     }
 }

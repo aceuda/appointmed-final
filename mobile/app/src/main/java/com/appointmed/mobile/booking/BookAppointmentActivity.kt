@@ -93,7 +93,7 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
         for (i in 0 until calendarGrid.childCount) {
             val child = calendarGrid.getChildAt(i) as? TextView ?: continue
             if (child.text.toString() == "$day") {
-                child.setBackgroundResource(R.drawable.bg_cal_selected)
+                child.setBackgroundColor(Color.parseColor("#2563EB"))
                 child.setTextColor(Color.WHITE)
             } else {
                 child.background = null
@@ -134,11 +134,14 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
                 ).apply {
                     marginEnd = 8.dpToPx()
                     bottomMargin = 8.dpToPx()
+                    flexShrink = 0f
                 }
                 layoutParams = params
                 setPadding(16.dpToPx(), 0, 16.dpToPx(), 0)
                 minWidth = 0
                 minHeight = 0
+                isSingleLine = true
+                maxLines = 1
                 
                 when (slotInfo.status) {
                     "available" -> {
@@ -221,7 +224,9 @@ class BookAppointmentActivity : AppCompatActivity(), BookAppointmentContract.Vie
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        if (::presenter.isInitialized) {
+            presenter.onDestroy()
+        }
         super.onDestroy()
     }
 

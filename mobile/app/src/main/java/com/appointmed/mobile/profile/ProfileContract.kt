@@ -19,6 +19,7 @@ interface ProfileContract {
         fun navigateToRecords()
         fun showToast(message: String)
         fun setAvatarFromBase64(data: String)
+        fun setAvatarFromUrl(url: String)
         fun setDefaultAvatar()
     }
 

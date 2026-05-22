@@ -1,8 +1,9 @@
 package com.appointmed.mobile.auth
 
 import android.content.Context
+import com.appointmed.mobile.data.model.AuthResponse
 import com.appointmed.mobile.data.model.LoginRequest
-import com.appointmed.mobile.data.model.User
+import com.appointmed.mobile.data.local.Prefs
 import com.appointmed.mobile.data.network.ApiClient
 import com.appointmed.mobile.util.NetworkUtils
 import okhttp3.ResponseBody
@@ -36,15 +37,16 @@ class LoginPresenter(
 
         view?.showLoading()
 
-        val request = LoginRequest(email = email, password = password)
+        val request = LoginRequest(email = email, password = password, role = selectedRole)
 
-        ApiClient.create(context).login(request).enqueue(object : Callback<User> {
-            override fun onResponse(call: Call<User>, response: Response<User>) {
+        ApiClient.create(context).login(request).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
                 view?.hideLoading()
                 if (response.isSuccessful) {
-                    val user = response.body()
-                    if (user != null) {
-                        view?.navigateToDashboard(user)
+                    val auth = response.body()
+                    if (auth != null && !auth.token.isNullOrEmpty()) {
+                        Prefs(context).saveAuth(auth, password)
+                        view?.navigateToDashboard(auth.toUser(password))
                     } else {
                         view?.showError("Invalid server response.")
                     }
@@ -53,7 +55,7 @@ class LoginPresenter(
                 }
             }
 
-            override fun onFailure(call: Call<User>, t: Throwable) {
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 view?.hideLoading()
                 view?.showError("Unable to connect to the server. ${t.localizedMessage}")
             }

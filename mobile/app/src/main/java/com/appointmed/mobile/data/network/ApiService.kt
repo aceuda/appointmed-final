@@ -8,10 +8,13 @@ interface ApiService {
 
     // ===== Auth / Users =====
     @POST("users/login")
-    fun login(@Body request: LoginRequest): Call<User>
+    fun login(@Body request: LoginRequest): Call<AuthResponse>
 
     @POST("users/register")
-    fun register(@Body request: RegisterRequest): Call<User>
+    fun register(@Body request: RegisterRequest): Call<AuthResponse>
+
+    @PUT("users/{id}/change-password")
+    fun changePassword(@Path("id") id: Long, @Body request: ChangePasswordRequest): Call<Void>
 
     @GET("users/{id}")
     fun getUser(@Path("id") id: Long): Call<User>
@@ -32,6 +35,9 @@ interface ApiService {
     @GET("doctors/search")
     fun searchDoctors(@Query("q") q: String, @Query("spec") spec: String? = null): Call<List<DoctorResponse>>
 
+    @GET("doctors/user/{userId}")
+    fun getDoctorByUserId(@Path("userId") userId: Long): Call<DoctorResponse>
+
     @GET("doctors/specializations")
     fun getSpecializations(): Call<List<String>>
 
@@ -40,6 +46,12 @@ interface ApiService {
 
     @GET("doctors/{id}/slots")
     fun getAvailableSlots(@Path("id") id: Long, @Query("date") date: String): Call<List<String>>
+
+    @PUT("doctors/{id}/slots/toggle")
+    fun toggleSlot(@Path("id") id: Long, @Query("date") date: String, @Query("time") time: String): Call<Map<String, Any>>
+
+    @PUT("doctors/{id}/profile")
+    fun updateDoctorProfile(@Path("id") id: Long, @Body req: DoctorProfileUpdateRequest): Call<DoctorResponse>
 
     // ===== Appointments =====
     @POST("appointments")
@@ -59,4 +71,14 @@ interface ApiService {
 
     @PUT("appointments/{id}/complete")
     fun completeAppointment(@Path("id") id: Long): Call<Appointment>
+
+    // ===== Notifications =====
+    @GET("notifications/user/{id}")
+    fun getNotifications(@Path("id") id: Long): Call<List<NotificationItem>>
+
+    @PUT("notifications/{id}/read")
+    fun markNotificationRead(@Path("id") id: Long): Call<NotificationItem>
+
+    @PUT("notifications/user/{id}/read-all")
+    fun markAllNotificationsRead(@Path("id") id: Long): Call<Void>
 }

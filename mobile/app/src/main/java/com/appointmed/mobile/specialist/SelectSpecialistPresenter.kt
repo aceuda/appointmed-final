@@ -133,7 +133,8 @@ class SelectSpecialistPresenter(
             clinic = this.clinicAddress ?: "Clinic not specified",
             fee = this.consultationFee,
             rating = this.rating,
-            available = this.available
+            available = this.available,
+            avatarUrl = this.avatarUrl
         )
     }
 }

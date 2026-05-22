@@ -3,13 +3,120 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
+    android:padding="16dp"
     android:background="@color/surface">
+
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/notificationsTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Notifications"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="@color/textPrimary" />
+        android:textColor="@color/textPrimary"
+        android:paddingBottom="12dp" />
+
+    <Button
+        android:id="@+id/markAllReadButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mark all read"
+        android:layout_marginBottom="12dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/notificationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/white" />
+
+    <ProgressBar
+        android:id="@+id/notificationsLoadingOverlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/cardBackground"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Home -->
+        <LinearLayout
+            android:id="@+id/navHome"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_home_nav"
+                android:tint="@color/textSecondary"
+                android:contentDescription="Home" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="11sp"
+                android:textColor="@color/textSecondary" />
+        </LinearLayout>
+
+        <!-- Appointments -->
+        <LinearLayout
+            android:id="@+id/navAppointments"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_calendar_nav"
+                android:tint="@color/textSecondary"
+                android:contentDescription="Appointments" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Appointments"
+                android:textSize="11sp"
+                android:textColor="@color/textSecondary" />
+        </LinearLayout>
+
+        <!-- Profile -->
+        <LinearLayout
+            android:id="@+id/navProfile"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_profile_nav"
+                android:tint="@color/textSecondary"
+                android:contentDescription="Profile" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="11sp"
+                android:textColor="@color/textSecondary" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

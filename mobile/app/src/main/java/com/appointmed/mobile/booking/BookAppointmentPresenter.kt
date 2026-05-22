@@ -82,7 +82,7 @@ class BookAppointmentPresenter(
                                 val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
                                 val slotTime = sdf.parse(slot.time)
                                 val nowTime = sdf.parse(sdf.format(now.time))
-                                if (slotTime != null && nowTime != null && slotTime.before(nowTime)) {
+                                if (slotTime != null && nowTime != null && slotTime.time <= nowTime.time) {
                                     status = "past"
                                 }
                             } catch (_: Exception) {}

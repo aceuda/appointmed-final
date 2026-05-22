@@ -20,6 +20,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.appointmed.mobile.R
 import com.appointmed.mobile.auth.LoginActivity
 import com.appointmed.mobile.data.model.User
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.RequestOptions
 
 class ProfileActivity : AppCompatActivity(), ProfileContract.View {
     private lateinit var imageProfileBack: ImageView
@@ -167,16 +170,43 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
 
     override fun setAvatarFromBase64(data: String) {
         try {
-            val avatarBytes = Base64.decode(data, Base64.DEFAULT)
+            var cleanData = data
+            if (data.contains(",")) {
+                cleanData = data.substringAfter(",")
+            }
+            val avatarBytes = Base64.decode(cleanData, Base64.NO_WRAP)
             val bitmap = BitmapFactory.decodeByteArray(avatarBytes, 0, avatarBytes.size)
-            imageProfileAvatar.setImageBitmap(bitmap)
+            if (bitmap != null) {
+                Glide.with(this)
+                    .load(bitmap)
+                    .circleCrop()
+                    .into(imageProfileAvatar)
+                imageProfileAvatar.imageTintList = null
+            } else {
+                setDefaultAvatar()
+            }
         } catch (exception: Exception) {
             setDefaultAvatar()
         }
     }
 
+    override fun setAvatarFromUrl(url: String) {
+        val fullUrl = if (url.startsWith("http")) url else com.appointmed.mobile.data.network.ApiClient.IMAGE_BASE_URL + url
+        
+        Glide.with(this)
+            .load(fullUrl)
+            .circleCrop()
+            .placeholder(android.R.drawable.ic_menu_myplaces)
+            .error(android.R.drawable.ic_menu_myplaces)
+            .into(imageProfileAvatar)
+        
+        imageProfileAvatar.imageTintList = null
+    }
+
     override fun setDefaultAvatar() {
         imageProfileAvatar.setImageResource(android.R.drawable.ic_menu_myplaces)
+        imageProfileAvatar.scaleType = ImageView.ScaleType.CENTER
+        imageProfileAvatar.imageTintList = getColorStateList(R.color.textSecondary)
     }
 
     override fun showProfileLoading(isLoading: Boolean) {
@@ -267,7 +297,8 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 val bytes = inputStream.readBytes()
-                selectedAvatarData = Base64.encodeToString(bytes, Base64.DEFAULT)
+                val base64Str = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                selectedAvatarData = "data:image/jpeg;base64,$base64Str"
                 imageProfileAvatar.setImageURI(uri)
             }
         } catch (exception: Exception) {
@@ -276,7 +307,9 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        if (::presenter.isInitialized) {
+            presenter.onDestroy()
+        }
         super.onDestroy()
     }
 }

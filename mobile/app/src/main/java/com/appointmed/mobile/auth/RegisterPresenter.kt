@@ -1,8 +1,8 @@
 package com.appointmed.mobile.auth
 
 import android.content.Context
+import com.appointmed.mobile.data.model.AuthResponse
 import com.appointmed.mobile.data.model.RegisterRequest
-import com.appointmed.mobile.data.model.User
 import com.appointmed.mobile.data.network.ApiClient
 import com.appointmed.mobile.util.NetworkUtils
 import okhttp3.ResponseBody
@@ -89,8 +89,8 @@ class RegisterPresenter(
             consultationFee = consultationFee.toIntOrNull()
         )
 
-        ApiClient.create(context).register(request).enqueue(object : Callback<User> {
-            override fun onResponse(call: Call<User>, response: Response<User>) {
+        ApiClient.create(context).register(request).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
                 view?.hideLoading()
                 if (response.isSuccessful) {
                     view?.showMessage("Registration successful! Please sign in.")
@@ -100,7 +100,7 @@ class RegisterPresenter(
                 }
             }
 
-            override fun onFailure(call: Call<User>, t: Throwable) {
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 view?.hideLoading()
                 view?.showError("Unable to connect to the server. ${t.localizedMessage}")
             }
