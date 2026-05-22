@@ -26,7 +26,7 @@ interface ProfileContract {
     interface Presenter {
         fun loadProfile()
         fun saveProfile(name: String, email: String, phone: String, address: String, birthDate: String, bloodType: String, consultationFee: String, avatarData: String?)
-        fun changePassword(currentPassword: String, newPassword: String, confirmPassword: String)
+        fun changePassword(newPassword: String, confirmPassword: String)
         fun onLogoutConfirmed()
         fun onHomeClicked()
         fun onScheduleClicked()
