@@ -22,24 +22,25 @@ function NotificationsPage() {
 
     useEffect(() => {
         if (!user) return;
+
+        const loadNotifications = async () => {
+            try {
+                const res = await notificationAPI.getByUser(user.id);
+                setNotifications(res.data || []);
+            } catch (err) { console.error(err); }
+            setLoading(false);
+        };
+
+        const loadPatients = async () => {
+            try {
+                const res = await userAPI.getAll();
+                setPatients(res.data.filter(u => u.role === 'PATIENT'));
+            } catch (err) { console.error(err); }
+        };
+
         loadNotifications();
         if (user.role === 'DOCTOR') loadPatients();
     }, [user]);
-
-    const loadNotifications = async () => {
-        try {
-            const res = await notificationAPI.getByUser(user.id);
-            setNotifications(res.data || []);
-        } catch (err) { console.error(err); }
-        setLoading(false);
-    };
-
-    const loadPatients = async () => {
-        try {
-            const res = await userAPI.getAll();
-            setPatients(res.data.filter(u => u.role === 'PATIENT'));
-        } catch (err) { console.error(err); }
-    };
 
     const handleMarkAsRead = async (id) => {
         try {

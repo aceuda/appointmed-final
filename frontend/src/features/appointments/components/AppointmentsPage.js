@@ -12,36 +12,35 @@ function AppointmentsPage() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
-    const [doctorProfile, setDoctorProfile] = useState(null);
 
     useEffect(() => {
         if (!user) return;
+
+        const loadAppointments = async () => {
+            try {
+                let res;
+                if (user.role === 'DOCTOR') {
+                    // Get doctor profile first, then fetch by doctor ID
+                    try {
+                        const docRes = await doctorAPI.getByUserId(user.id);
+                        res = await appointmentAPI.getByDoctor(docRes.data.id);
+                        setAppointments(res.data || []);
+                    } catch {
+                        res = await appointmentAPI.getAll();
+                        setAppointments((res.data || []).filter(a => a.doctor?.user?.id === user.id));
+                    }
+                } else {
+                    res = await appointmentAPI.getByPatient(user.id);
+                    setAppointments(res.data || []);
+                }
+            } catch (err) {
+                console.error('Failed to load appointments:', err);
+            }
+            setLoading(false);
+        };
+
         loadAppointments();
     }, [user]);
-
-    const loadAppointments = async () => {
-        try {
-            let res;
-            if (user.role === 'DOCTOR') {
-                // Get doctor profile first, then fetch by doctor ID
-                try {
-                    const docRes = await doctorAPI.getByUserId(user.id);
-                    setDoctorProfile(docRes.data);
-                    res = await appointmentAPI.getByDoctor(docRes.data.id);
-                    setAppointments(res.data || []);
-                } catch {
-                    res = await appointmentAPI.getAll();
-                    setAppointments((res.data || []).filter(a => a.doctor?.user?.id === user.id));
-                }
-            } else {
-                res = await appointmentAPI.getByPatient(user.id);
-                setAppointments(res.data || []);
-            }
-        } catch (err) {
-            console.error('Failed to load appointments:', err);
-        }
-        setLoading(false);
-    };
 
     const handleCancel = async (id) => {
         if (!window.confirm('Are you sure you want to cancel this appointment?')) return;

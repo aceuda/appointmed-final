@@ -98,14 +98,14 @@ const ProfilePage = () => {
             };
             fetchDoctorProfile();
         }
-    }, []);
+    }, [savedUser, isDoctor]);
 
     // Track changes
     useEffect(() => {
         if (savedUser) {
             setProfileDirty(true);
         }
-    }, [profileName, profileEmail, profilePhone, profileAddress, profileDob, profileBlood, avatarData]);
+    }, [savedUser, profileName, profileEmail, profilePhone, profileAddress, profileDob, profileBlood, avatarData]);
 
     const handleAvatarUpload = (e) => {
         const file = e.target.files[0];

@@ -6,7 +6,7 @@ import './SelectSpecialist.css';
 
 function SelectSpecialist({ onSelectDoctor }) {
     const navigate = useNavigate();
-    const { user, handleLogout } = useAuth();
+    const { handleLogout } = useAuth();
     const [doctors, setDoctors] = useState([]);
     const [specializations, setSpecializations] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -109,10 +109,10 @@ function SelectSpecialist({ onSelectDoctor }) {
 
                 <div className="doctors-grid">
                     {loading ? (
-                        <div style={{gridColumn:'1/-1',textAlign:'center',padding:40,color:'#94a3b8'}}>Loading specialists...</div>
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#94a3b8' }}>Loading specialists...</div>
                     ) : visibleDoctors.length === 0 ? (
-                        <div style={{gridColumn:'1/-1',textAlign:'center',padding:40,color:'#94a3b8'}}>
-                            <span className="material-symbols-outlined" style={{fontSize:48}}>person_search</span>
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#94a3b8' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 48 }}>person_search</span>
                             <p>No specialists found matching your criteria</p>
                         </div>
                     ) : (
@@ -132,9 +132,9 @@ function SelectSpecialist({ onSelectDoctor }) {
                                 <p className="card-specialty">{doc.specialization}</p>
                                 <div className="card-meta-details">
                                     {doc.clinicAddress && (
-                                        <p className="card-clinic"><span className="material-symbols-outlined" style={{fontSize:14}}>location_on</span> {doc.clinicAddress}</p>
+                                        <p className="card-clinic"><span className="material-symbols-outlined" style={{ fontSize: 14 }}>location_on</span> {doc.clinicAddress}</p>
                                     )}
-                                    <p className="card-fee"><span className="material-symbols-outlined" style={{fontSize:14}}>payments</span> {formatFee(doc.consultationFee)} / visit</p>
+                                    <p className="card-fee"><span className="material-symbols-outlined" style={{ fontSize: 14 }}>payments</span> {formatFee(doc.consultationFee)} / visit</p>
                                 </div>
                                 <div className="card-rating">
                                     <span className="star">★</span> {doc.rating?.toFixed(1) || '4.5'} <span className="review-count">({doc.reviews || 0} reviews)</span>
