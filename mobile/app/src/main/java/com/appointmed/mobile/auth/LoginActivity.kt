@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.appointmed.mobile.R
 import com.appointmed.mobile.dashboard.DashboardActivity
+import com.appointmed.mobile.data.local.Prefs
 import com.appointmed.mobile.data.model.User
 
 class LoginActivity : AppCompatActivity(), LoginContract.View {
@@ -33,6 +34,13 @@ class LoginActivity : AppCompatActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        val prefs = Prefs(this)
+        if (prefs.isLoggedIn()) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
 
         presenter = LoginPresenter(this, this)
 
@@ -125,17 +133,15 @@ class LoginActivity : AppCompatActivity(), LoginContract.View {
     }
 
     override fun navigateToDashboard(user: User) {
-        val intent = if (user.role == "ADMIN") {
-            Intent(this, com.appointmed.mobile.admin.AdminDashboardActivity::class.java)
-        } else {
-            Intent(this, DashboardActivity::class.java)
-        }
+        val intent = Intent(this, DashboardActivity::class.java)
         startActivity(intent)
         finish()
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        if (::presenter.isInitialized) {
+            presenter.onDestroy()
+        }
         super.onDestroy()
     }
 }

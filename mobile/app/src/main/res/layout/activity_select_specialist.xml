@@ -126,19 +126,19 @@
         android:elevation="8dp"
         android:gravity="center_vertical">
         <LinearLayout android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_today" android:contentDescription="Home" />
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_home_nav" android:contentDescription="Home" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Home" android:textSize="10sp" android:textColor="@color/textSecondary" />
         </LinearLayout>
         <LinearLayout android:id="@+id/navSchedule" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_my_calendar" android:contentDescription="Appointments" />
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_calendar_nav" android:contentDescription="Appointments" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Appointments" android:textSize="10sp" android:textColor="@color/textSecondary" />
         </LinearLayout>
         <LinearLayout android:id="@+id/navDoctors" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_myplaces" android:contentDescription="Doctors" />
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_search" android:contentDescription="Doctors" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Doctors" android:textSize="10sp" android:textColor="@color/secondary" android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_manage" android:contentDescription="Profile" />
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_profile_nav" android:contentDescription="Profile" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Profile" android:textSize="10sp" android:textColor="@color/textSecondary" />
         </LinearLayout>
     </LinearLayout>

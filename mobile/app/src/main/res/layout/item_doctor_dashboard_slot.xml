@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutSlotContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="12dp"
+    android:layout_margin="6dp"
+    android:background="@drawable/bg_quick_action"
+    android:backgroundTint="#F0FDFA">
+
+    <TextView
+        android:id="@+id/textSlotTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="08:00 AM"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#0F766E" />
+
+    <TextView
+        android:id="@+id/textSlotStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Available"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="#14B8A6"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/textSlotPatientName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Patient Name"
+        android:textSize="11sp"
+        android:textColor="#334155"
+        android:visibility="gone"
+        android:layout_marginTop="4dp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>

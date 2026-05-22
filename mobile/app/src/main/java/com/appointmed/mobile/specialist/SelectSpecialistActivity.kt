@@ -15,6 +15,10 @@ import com.appointmed.mobile.R
 import com.appointmed.mobile.booking.BookAppointmentActivity
 import com.appointmed.mobile.dashboard.DashboardActivity
 import com.appointmed.mobile.profile.ProfileActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 
 class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.View {
 
@@ -154,7 +158,9 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        if (::presenter.isInitialized) {
+            presenter.onDestroy()
+        }
         super.onDestroy()
     }
 
@@ -170,6 +176,7 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
         }
 
         inner class VH(view: View) : RecyclerView.ViewHolder(view) {
+            val avatar: ImageView = view.findViewById(R.id.imageDoctorAvatar)
             val name: TextView = view.findViewById(R.id.textDoctorName)
             val specialty: TextView = view.findViewById(R.id.textDoctorSpecialty)
             val clinic: TextView = view.findViewById(R.id.textDoctorClinic)
@@ -188,6 +195,23 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
             holder.name.text = doc.name
             holder.specialty.text = doc.specialty
             holder.clinic.text = doc.clinic
+
+            // Load avatar
+            val avatarUrl = doc.avatarUrl
+            val fullAvatarUrl = if (avatarUrl.isNullOrEmpty()) {
+                null
+            } else if (avatarUrl.startsWith("http")) {
+                avatarUrl
+            } else {
+                com.appointmed.mobile.data.network.ApiClient.IMAGE_BASE_URL + avatarUrl
+            }
+
+            Glide.with(holder.itemView.context)
+                .load(fullAvatarUrl)
+                .placeholder(R.mipmap.ic_launcher_round)
+                .error(R.mipmap.ic_launcher_round)
+                .transform(CenterCrop(), RoundedCorners(30))
+                .into(holder.avatar)
             
             // Format fee with Peso sign
             holder.fee.text = if (doc.fee > 0) {
@@ -200,7 +224,7 @@ class SelectSpecialistActivity : AppCompatActivity(), SelectSpecialistContract.V
 
             if (doc.available) {
                 holder.btnBook.text = "Book"
-                holder.btnBook.setBackgroundResource(R.drawable.bg_btn_book)
+                holder.btnBook.setBackgroundResource(R.drawable.bg_chip_active)
                 holder.btnBook.setTextColor(holder.itemView.resources.getColor(android.R.color.white, null))
                 holder.btnBook.isEnabled = true
             } else {

@@ -7,7 +7,8 @@ data class DoctorItem(
     val clinic: String,
     val fee: Double,
     val rating: Double,
-    val available: Boolean
+    val available: Boolean,
+    val avatarUrl: String? = null
 )
 
 interface SelectSpecialistContract {

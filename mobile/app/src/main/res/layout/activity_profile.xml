@@ -93,8 +93,8 @@
 
                     <ImageView
                         android:id="@+id/imageProfileAvatar"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
                         android:layout_gravity="center"
                         android:src="@android:drawable/ic_menu_myplaces"
                         android:tint="#94A3B8"
@@ -707,7 +707,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_view"
+                android:src="@drawable/ic_home_nav"
                 android:tint="@color/textSecondary"
                 android:contentDescription="Home" />
             <TextView
@@ -733,7 +733,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_my_calendar"
+                android:src="@drawable/ic_calendar_nav"
                 android:tint="@color/textSecondary"
                 android:contentDescription="Visits" />
             <TextView
@@ -785,7 +785,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_manage"
+                android:src="@drawable/ic_profile_nav"
                 android:tint="#3B82F6"
                 android:contentDescription="Profile" />
             <TextView

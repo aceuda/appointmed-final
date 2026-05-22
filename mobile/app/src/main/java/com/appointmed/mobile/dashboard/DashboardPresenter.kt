@@ -28,6 +28,7 @@ class DashboardPresenter(
             val user = prefs.getUser()
             val firstName = user.name.split(" ").firstOrNull() ?: user.name
             view?.showWelcomeName(firstName)
+            view?.showUserAvatar(user.avatarData)
             view?.setDashboardViewType(user.role == "DOCTOR")
         }
     }
@@ -54,7 +55,7 @@ class DashboardPresenter(
                     // Find first upcoming (PENDING or CONFIRMED)
                     val upcoming = appointments
                         .filter { it.status == "PENDING" || it.status == "CONFIRMED" }
-                        .sortedBy { it.appointmentDate }
+                        .sortedWith(compareBy<Appointment> { it.appointmentDate }.thenBy { it.appointmentTime })
                         .firstOrNull()
 
                     if (upcoming != null) {
@@ -62,7 +63,8 @@ class DashboardPresenter(
                         val dateStr = formatDisplayDate(upcoming.appointmentDate)
                         val details = "$dateStr • ${upcoming.appointmentTime}"
                         val displayId = "AM-${upcoming.id}"
-                        view?.showUpcomingAppointment(doctorName, details, displayId)
+                        val avatarData = upcoming.doctor?.user?.avatarData ?: upcoming.doctor?.avatarUrl
+                        view?.showUpcomingAppointment(doctorName, details, displayId, avatarData)
                     } else {
                         view?.hideUpcomingAppointment()
                     }
@@ -94,32 +96,118 @@ class DashboardPresenter(
 
     private fun loadDoctorDashboard(userId: Long) {
         view?.showLoadingDoctors()
-        apiService.getDoctorAppointments(userId).enqueue(object : Callback<List<Appointment>> {
-            override fun onResponse(call: Call<List<Appointment>>, response: Response<List<Appointment>>) {
-                view?.hideLoadingDoctors()
-                if (response.isSuccessful) {
-                    val appointments = response.body() ?: emptyList()
-                    view?.showDoctorAppointments(appointments)
-                    
-                    // Show next appointment in top card
-                    val next = appointments
-                        .filter { it.status == "CONFIRMED" || it.status == "PENDING" }
-                        .sortedBy { it.appointmentDate }
-                        .firstOrNull()
+        
+        apiService.getDoctorByUserId(userId).enqueue(object : Callback<DoctorResponse> {
+            override fun onResponse(call: Call<DoctorResponse>, response: Response<DoctorResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val doctorId = response.body()!!.id
+                    val todayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val todayStr = todayFormat.format(Date())
 
-                    if (next != null) {
-                        val patientName = next.patient?.name ?: "Patient"
-                        val dateStr = formatDisplayDate(next.appointmentDate)
-                        val details = "$dateStr • ${next.appointmentTime}"
-                        view?.showUpcomingAppointment(patientName, details, "AM-${next.id}")
-                    } else {
-                        view?.hideUpcomingAppointment()
-                    }
+                    // Fetch today's appointments
+                    apiService.getDoctorAppointments(doctorId, todayStr).enqueue(object : Callback<List<Appointment>> {
+                        override fun onResponse(call: Call<List<Appointment>>, response: Response<List<Appointment>>) {
+                            if (response.isSuccessful) {
+                                val appointments = (response.body() ?: emptyList())
+                                    .sortedBy { it.appointmentTime }
+                                view?.showDoctorDailyOverview(appointments)
+
+                                // Fetch today's slots
+                                apiService.getSlotsWithStatus(doctorId, todayStr).enqueue(object : Callback<List<com.appointmed.mobile.data.model.SlotStatus>> {
+                                    override fun onResponse(call: Call<List<com.appointmed.mobile.data.model.SlotStatus>>, slotRes: Response<List<com.appointmed.mobile.data.model.SlotStatus>>) {
+                                        view?.hideLoadingDoctors()
+                                        if (slotRes.isSuccessful) {
+                                            val slots = slotRes.body() ?: emptyList()
+                                            view?.showDoctorSchedule(slots)
+
+                                            // Compute stats
+                                            val totalAppts = appointments.size
+                                            val totalSlots = slots.size
+                                            val bookedSlots = slots.count { it.status == "booked" }
+                                            view?.showDoctorDashboardStats(totalAppts, bookedSlots, totalSlots)
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<List<com.appointmed.mobile.data.model.SlotStatus>>, t: Throwable) {
+                                        view?.hideLoadingDoctors()
+                                    }
+                                })
+                            }
+                        }
+
+                        override fun onFailure(call: Call<List<Appointment>>, t: Throwable) {
+                            view?.hideLoadingDoctors()
+                        }
+                    })
+                } else {
+                    view?.hideLoadingDoctors()
                 }
             }
-
-            override fun onFailure(call: Call<List<Appointment>>, t: Throwable) {
+            override fun onFailure(call: Call<DoctorResponse>, t: Throwable) {
                 view?.hideLoadingDoctors()
+            }
+        })
+    }
+
+    override fun confirmAppointment(id: Long) {
+        apiService.confirmAppointment(id).enqueue(object : Callback<Appointment> {
+            override fun onResponse(call: Call<Appointment>, response: Response<Appointment>) {
+                if (response.isSuccessful) {
+                    view?.showToast("Appointment confirmed!")
+                    loadDashboardData() // Refresh to update overview and slots
+                } else {
+                    view?.showToast("Failed to confirm")
+                }
+            }
+            override fun onFailure(call: Call<Appointment>, t: Throwable) {
+                view?.showToast("Network error")
+            }
+        })
+    }
+
+    override fun completeAppointment(id: Long) {
+        apiService.completeAppointment(id).enqueue(object : Callback<Appointment> {
+            override fun onResponse(call: Call<Appointment>, response: Response<Appointment>) {
+                if (response.isSuccessful) {
+                    view?.showToast("Appointment completed!")
+                    loadDashboardData() // Refresh
+                } else {
+                    view?.showToast("Failed to complete")
+                }
+            }
+            override fun onFailure(call: Call<Appointment>, t: Throwable) {
+                view?.showToast("Network error")
+            }
+        })
+    }
+
+    override fun toggleSlotAvailability(slot: com.appointmed.mobile.data.model.SlotStatus) {
+        val user = prefs.getUser()
+        apiService.getDoctorByUserId(user.id).enqueue(object : Callback<DoctorResponse> {
+            override fun onResponse(call: Call<DoctorResponse>, response: Response<DoctorResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val doctorId = response.body()!!.id
+                    val todayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val todayStr = todayFormat.format(Date())
+                    
+                    apiService.toggleSlot(doctorId, todayStr, slot.time).enqueue(object : Callback<Map<String, Any>> {
+                        override fun onResponse(call: Call<Map<String, Any>>, res: Response<Map<String, Any>>) {
+                            if (res.isSuccessful) {
+                                val action = if (slot.status == "blocked") "unblocked" else "blocked"
+                                view?.showToast("${slot.time} $action successfully")
+                                loadDashboardData() // Refresh slots
+                            } else {
+                                view?.showToast("Failed to toggle slot")
+                            }
+                        }
+                        override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
+                            view?.showToast("Network error")
+                        }
+                    })
+                }
+            }
+            override fun onFailure(call: Call<DoctorResponse>, t: Throwable) {
+                view?.showToast("Network error")
             }
         })
     }
@@ -132,7 +220,8 @@ class DashboardPresenter(
             clinic = this.clinicAddress ?: "Clinic not specified",
             fee = this.consultationFee,
             rating = this.rating,
-            available = this.available
+            available = this.available,
+            avatarUrl = this.avatarUrl
         )
     }
 
@@ -180,7 +269,12 @@ class DashboardPresenter(
     }
 
     override fun onBookClicked() {
-        view?.navigateToSelectSpecialist()
+        val user = prefs.getUser()
+        if (user.role == "DOCTOR") {
+            view?.navigateToAppointments()
+        } else {
+            view?.navigateToSelectSpecialist()
+        }
     }
 
     override fun onNotificationsClicked() {

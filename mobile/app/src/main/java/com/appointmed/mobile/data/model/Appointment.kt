@@ -15,7 +15,9 @@ data class Appointment(
 data class AppointmentUser(
     val id: Long = 0,
     val name: String = "",
-    val email: String = ""
+    val email: String = "",
+    val avatarData: String? = null,
+    val avatarUrl: String? = null
 )
 
 data class AppointmentDoctor(
@@ -23,5 +25,6 @@ data class AppointmentDoctor(
     val specialization: String = "",
     val phone: String? = null,
     val clinicAddress: String? = null,
+    val avatarUrl: String? = null,
     val user: AppointmentUser? = null
 )

@@ -15,7 +15,10 @@ interface AppointmentsContract {
 
     interface Presenter {
         fun loadAppointments()
+        fun filterAppointments(status: String)
+        fun confirmAppointment(appointmentId: Long)
         fun cancelAppointment(appointmentId: Long)
+        fun completeAppointment(appointmentId: Long)
         fun onHomeClicked()
         fun onProfileClicked()
         fun onBookClicked()

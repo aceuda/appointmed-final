@@ -72,8 +72,13 @@ function AppointmentsPage() {
         return a.status === filter;
     });
 
-    const upcoming = filtered.filter(a => a.status === 'CONFIRMED' || a.status === 'PENDING');
-    const past = filtered.filter(a => a.status === 'COMPLETED' || a.status === 'CANCELLED');
+    const today = new Date().toISOString().split('T')[0];
+
+    const upcoming = filtered.filter(a => 
+        (a.status === 'CONFIRMED' || a.status === 'PENDING') &&
+        a.appointmentDate && a.appointmentDate >= today
+    );
+    const past = filtered.filter(a => !upcoming.includes(a));
 
     const getStatusClass = (status) => {
         switch (status) {

@@ -167,7 +167,9 @@ class RegisterActivity : AppCompatActivity(), RegisterContract.View {
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
+        if (::presenter.isInitialized) {
+            presenter.onDestroy()
+        }
         super.onDestroy()
     }
 }
