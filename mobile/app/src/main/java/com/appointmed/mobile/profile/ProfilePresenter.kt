@@ -184,8 +184,8 @@ class ProfilePresenter(
         })
     }
 
-    override fun changePassword(currentPassword: String, newPassword: String, confirmPassword: String) {
-        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+    override fun changePassword(newPassword: String, confirmPassword: String) {
+        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
             view?.showPasswordError("All password fields are required.")
             return
         }
@@ -203,11 +203,6 @@ class ProfilePresenter(
         val prefs = Prefs(context)
         val user = prefs.getUser()
 
-        if (currentPassword != user.password) {
-            view?.showPasswordError("Current password is incorrect.")
-            return
-        }
-
         if (!NetworkUtils.isOnline(context)) {
             view?.showPasswordError("No internet connection. Please try again later.")
             return
@@ -216,7 +211,6 @@ class ProfilePresenter(
         view?.showPasswordLoading(true)
 
         val request = ChangePasswordRequest(
-            currentPassword = currentPassword,
             newPassword = newPassword
         )
 

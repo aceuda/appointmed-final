@@ -136,7 +136,6 @@ class ProfileActivity : AppCompatActivity(), ProfileContract.View {
 
         buttonUpdatePassword.setOnClickListener {
             presenter.changePassword(
-                currentPassword = inputCurrentPassword.text.toString().trim(),
                 newPassword = inputNewPassword.text.toString().trim(),
                 confirmPassword = inputConfirmNewPassword.text.toString().trim()
             )
